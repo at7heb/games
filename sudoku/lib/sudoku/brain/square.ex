@@ -56,4 +56,7 @@ defmodule Sudoku.Brain.Square do
     |> Enum.map(fn v -> Integer.to_string(v) end)
     |> Enum.join()
   end
+
+  def count(%Sudoku.Brain.Square{values: values}),
+    do: length(values)
 end
