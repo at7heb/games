@@ -26,10 +26,10 @@ defmodule BoardTest do
     refute {vert, horz} in r
   end
 
-  test "square for" do
+  test "big square for" do
     vert = :rand.uniform(9)
     horz = :rand.uniform(9)
-    r = Sudoku.Brain.Board.square_for(vert, horz)
+    r = Sudoku.Brain.Board.big_square_for(vert, horz)
     horizontals = Enum.map(r, &elem(&1, 1)) |> Enum.uniq()
     verticals = Enum.map(r, &elem(&1, 0)) |> Enum.uniq()
     assert length(horizontals) == 3

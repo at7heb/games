@@ -83,7 +83,7 @@ defmodule Sudoku.Brain.Board do
     |> Enum.filter(fn coordinate -> coordinate != {vert, horz} end)
   end
 
-  def square_for(vert, horz) when is_integer(vert) and is_integer(horz) do
+  def big_square_for(vert, horz) when is_integer(vert) and is_integer(horz) do
     vert0 = 3 * div(vert - 1, 3) + 1
     horz0 = 3 * div(horz - 1, 3) + 1
 
