@@ -9,6 +9,7 @@ defmodule Sudoku.Brain.Square do
   is_just_one? - true if only one number in square
   have_just_oned - used to set flag
   have_just_oned? - test flag
+  to_string - remaining numbers, no spaces
 
   removing a number several times is not an error
   setting have_just_oned multiple time is an error
@@ -36,4 +37,23 @@ defmodule Sudoku.Brain.Square do
   end
 
   def is_just_one?(%Sudoku.Brain.Square{values: values} = _s), do: length(values) == 1
+
+  def have_just_oned(%Sudoku.Brain.Square{have_oned: true}),
+    do: raise("multiple have_just_oned calls")
+
+  def have_just_oned(%Sudoku.Brain.Square{values: values} = s) do
+    if length(values) != 1 do
+      raise "just_oned a non-unitary square"
+    end
+
+    %{s | have_oned: true}
+  end
+
+  def have_just_oned?(%Sudoku.Brain.Square{have_oned: v}), do: v
+
+  def to_string(%Sudoku.Brain.Square{values: values}) do
+    values
+    |> Enum.map(fn v -> Integer.to_string(v) end)
+    |> Enum.join()
+  end
 end
