@@ -38,7 +38,56 @@ defmodule BoardTest do
     refute {vert, horz} in r
   end
 
+  test "transposing g in board" do
+    board = make_random_board()
+    coords = Enum.map(1..50, fn _x -> {:rand.uniform(9), :rand.uniform(9)} end)
+
+    transposed_board = Sudoku.Brain.Board.transpose(board)
+
+    test_result =
+      Enum.map(coords, fn {v, h} ->
+        # {{v, h}, Sudoku.Brain.Board.at(board, {v, h}),
+        #  Sudoku.Brain.Board.at(transposed_board, {v, h})}
+        # |> dbg
+
+        Sudoku.Brain.Board.at(board, {v, h}) == Sudoku.Brain.Board.at(transposed_board, {h, v})
+      end)
+
+    assert Enum.all?(test_result)
+  end
+
+  test "update known" do
+    board = Sudoku.Brain.Board.new("1")
+    assert Sudoku.Brain.Board.known_count(board) == 1
+    assert Sudoku.Brain.Board.count_at(board, {2, 2}) == 9
+    board2 = Sudoku.Brain.Board.update_known(board)
+    assert Sudoku.Brain.Board.count_at(board2, {2, 2}) == 8
+    assert Sudoku.Brain.Board.count_at(board2, {1, 2}) == 8
+    assert Sudoku.Brain.Board.count_at(board2, {2, 1}) == 8
+    assert Sudoku.Brain.Board.count_at(board2, {9, 9}) == 9
+    IO.puts("---------------------------------------------------------------")
+    board3 = Sudoku.Brain.Board.new("12345678")
+    board4 = Sudoku.Brain.Board.update_known(board3)
+    assert Sudoku.Brain.Board.count_at(board4, {1, 9}) == 1
+    assert Sudoku.Brain.Board.count_at(board4, {2, 1}) == 6
+    assert Sudoku.Brain.Board.count_at(board4, {7, 8}) == 8
+    "top row" |> dbg
+    Enum.map(1..9, fn horz -> Sudoku.Brain.Board.at(board4, {1, horz}) end) |> dbg()
+
+    "bottom row" |> dbg
+    Enum.map(1..9, fn horz -> Sudoku.Brain.Board.at(board4, {9, horz}) end) |> dbg()
+    assert Sudoku.Brain.Board.count_at(board4, {9, 9}) == 8
+  end
+
   def get_easy_initial_board() do
     " 9 1 8 4\n  375  89\n6     1\n3 96   2\n  79415\n 5   39 4\n  4     2\n46  824\n 3 4 9 5"
+  end
+
+  def make_random_board() do
+    rows =
+      for _vert <- 1..9,
+          do: for(_horz <- 1..9, do: :rand.uniform(9) |> Integer.to_string()) |> Enum.join()
+
+    Sudoku.Brain.Board.new(rows |> Enum.join("\n"))
   end
 end

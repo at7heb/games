@@ -1,18 +1,10 @@
 defmodule Sudoku.Brain.Board do
   defstruct game: %{}, known_count: 0
 
-  # def new()
-  # def new(init) when is_binary(init)
-  # def row_for(vert, horz) when is_integer(vert) and is_integer(horz)
-  # def square_for(vert, horz) when is_integer(vert) and is_integer(horz)
-  # def transpose(%Sudoku_Game{} = g)
   # def update_known(%Sudoku_Game{} = g)
 
   def new() do
-    coordinates =
-      for vert <- 1..9,
-          horz <- 1..9,
-          do: {vert, horz}
+    coordinates = all_coordinates()
 
     game =
       Enum.reduce(coordinates, %{}, fn coordinates, g ->
@@ -63,7 +55,7 @@ defmodule Sudoku.Brain.Board do
 
   def known_count(%Sudoku.Brain.Board{known_count: count} = _b), do: count
 
-  def count_known_squares(%Sudoku.Brain.Board{game: g} = board) do
+  defp count_known_squares(%Sudoku.Brain.Board{game: g} = board) do
     coordinates = for vert <- 1..9, horz <- 1..9, do: {vert, horz}
 
     Enum.map(coordinates, fn coordinate -> {coordinate, Map.get(g, coordinate)} end)
@@ -78,10 +70,14 @@ defmodule Sudoku.Brain.Board do
     %{board | known_count: count}
   end
 
+  def row_for({vert, horz}), do: row_for(vert, horz)
+
   def row_for(vert, horz) when is_integer(vert) and is_integer(horz) and vert in 1..9 do
     for(column <- 1..9, do: {vert, column})
     |> Enum.filter(fn coordinate -> coordinate != {vert, horz} end)
   end
+
+  def big_square_for({vert, horz}), do: big_square_for(vert, horz)
 
   def big_square_for(vert, horz) when is_integer(vert) and is_integer(horz) do
     vert0 = 3 * div(vert - 1, 3) + 1
@@ -93,5 +89,95 @@ defmodule Sudoku.Brain.Board do
       do: {row, column}
     )
     |> Enum.filter(fn coordinate -> coordinate != {vert, horz} end)
+  end
+
+  def transpose(%Sudoku.Brain.Board{game: g} = board) do
+    coords_lower = for(v <- 2..9, h <- 1..(v - 1), do: {v, h})
+    coords_diagonal = for(v <- 1..9, do: {v, v})
+
+    new_g =
+      Enum.reduce(coords_lower, %{}, fn {v, h} = c, ng ->
+        vl = Map.get(g, c)
+        vu = Map.get(g, {h, v})
+        Map.put(ng, c, vu) |> Map.put({h, v}, vl)
+      end)
+
+    newer_g =
+      Enum.reduce(coords_diagonal, new_g, fn c, ng ->
+        vd = Map.get(g, c)
+        Map.put(ng, c, vd)
+      end)
+
+    %{board | game: newer_g}
+  end
+
+  def update_known(%Sudoku.Brain.Board{} = board) do
+    update_places = get_update_places(board)
+
+    Enum.reduce(update_places, board, fn coord, bd -> update_for_one_square(bd, coord) end)
+  end
+
+  defp update_for_one_square(%Sudoku.Brain.Board{} = board, {v, h} = coordinate) do
+    value = at(board, coordinate) |> Sudoku.Brain.Square.value()
+
+    update_big_square(board, value, coordinate)
+    |> update_row(value, coordinate)
+    |> transpose()
+    |> update_row(value, {h, v})
+    |> transpose()
+    |> set_oned(coordinate)
+  end
+
+  defp update_big_square(%Sudoku.Brain.Board{} = board, value, {_v, _h} = coordinate) do
+    big_square_for(coordinate)
+    |> Enum.reduce(board, fn coord, bd -> update_one_square(bd, value, coord) end)
+  end
+
+  defp update_row(%Sudoku.Brain.Board{} = board, value, {_v, _h} = coordinate) do
+    row_for(coordinate)
+    |> Enum.reduce(board, fn coord, bd -> update_one_square(bd, value, coord) end)
+  end
+
+  defp get_update_places(%Sudoku.Brain.Board{} = board) do
+    at(board, {1, 9}) |> dbg
+
+    all_coordinates()
+    |> Enum.filter(fn coordinate ->
+      sq = at(board, coordinate)
+      Sudoku.Brain.Square.is_just_one?(sq) and not Sudoku.Brain.Square.have_just_oned?(sq)
+    end)
+    |> dbg
+  end
+
+  defp update_one_square(%Sudoku.Brain.Board{game: g} = board, value, {_v, _h} = coordinate) do
+    square =
+      at(board, coordinate)
+      |> Sudoku.Brain.Square.remove(value)
+
+    new_game = Map.put(g, coordinate, square)
+    %{board | game: new_game}
+  end
+
+  defp set_oned(%Sudoku.Brain.Board{game: g} = board, {_v, _h} = coordinate) do
+    square =
+      at(board, coordinate)
+      |> Sudoku.Brain.Square.have_just_oned()
+
+    {"board set oned", coordinate, square} |> dbg
+
+    new_game = Map.put(g, coordinate, square)
+    %{board | game: new_game}
+  end
+
+  defp all_coordinates() do
+    for vert <- 1..9,
+        horz <- 1..9,
+        do: {vert, horz}
+  end
+
+  def at(%Sudoku.Brain.Board{game: g} = _bd, coordinate), do: Map.get(g, coordinate)
+
+  def count_at(%Sudoku.Brain.Board{game: g} = _bd, coordinate) do
+    Map.get(g, coordinate) |> Sudoku.Brain.Square.count()
   end
 end

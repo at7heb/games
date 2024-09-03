@@ -57,6 +57,13 @@ defmodule Sudoku.Brain.Square do
     |> Enum.join()
   end
 
-  def count(%Sudoku.Brain.Square{values: values}),
-    do: length(values)
+  def count(%Sudoku.Brain.Square{values: values}), do: length(values)
+
+  def value(%Sudoku.Brain.Square{values: values}) do
+    case length(values) do
+      0 -> raise "value of empty cell"
+      1 -> hd(values)
+      _ -> raise "value of multi-cell"
+    end
+  end
 end
