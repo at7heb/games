@@ -51,10 +51,30 @@ defmodule Sudoku.Brain.Square do
 
   def have_just_oned?(%Sudoku.Brain.Square{have_oned: v}), do: v
 
-  def to_string(%Sudoku.Brain.Square{values: values}) do
-    values
-    |> Enum.map(fn v -> Integer.to_string(v) end)
-    |> Enum.join()
+  def to_string(%Sudoku.Brain.Square{values: values}, form \\ :full) do
+    digits = " ①②③④⑤⑥⑦⑧⑨"
+    unknowns = "  abcdefgh"
+
+    case form do
+      :full ->
+        values
+        |> Enum.map(fn v -> Integer.to_string(v) end)
+        |> Enum.join()
+
+      :short ->
+        if length(values) == 1 do
+          String.slice(digits, hd(values), 1)
+        else
+          String.slice(unknowns, length(values), 1)
+        end
+
+      :known ->
+        if length(values) == 1 do
+          String.slice(digits, hd(values), 1)
+        else
+          " "
+        end
+    end
   end
 
   def count(%Sudoku.Brain.Square{values: values}), do: length(values)

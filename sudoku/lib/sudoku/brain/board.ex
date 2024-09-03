@@ -15,9 +15,9 @@ defmodule Sudoku.Brain.Board do
     %{board | game: game}
   end
 
-  def new(init) when is_binary(init) do
+  def new(game_definition) when is_binary(game_definition) do
     g = Sudoku.Brain.Board.new()
-    rows = String.split(init, "\n")
+    rows = condition_definition(game_definition)
 
     new(g, rows, 1)
     |> count_known_squares()
@@ -56,12 +56,10 @@ defmodule Sudoku.Brain.Board do
   def known_count(%Sudoku.Brain.Board{known_count: count} = _b), do: count
 
   defp count_known_squares(%Sudoku.Brain.Board{game: g} = board) do
-    coordinates = for vert <- 1..9, horz <- 1..9, do: {vert, horz}
-
-    Enum.map(coordinates, fn coordinate -> {coordinate, Map.get(g, coordinate)} end)
+    # Enum.map(all_coordinates(), fn coordinate -> {coordinate, Map.get(g, coordinate)} end)
 
     count =
-      Enum.map(coordinates, fn coordinate ->
+      Enum.map(all_coordinates(), fn coordinate ->
         Map.get(g, coordinate) |> Sudoku.Brain.Square.count()
       end)
       |> Enum.filter(fn count_in_square -> count_in_square == 1 end)
@@ -115,6 +113,26 @@ defmodule Sudoku.Brain.Board do
     update_places = get_update_places(board)
 
     Enum.reduce(update_places, board, fn coord, bd -> update_for_one_square(bd, coord) end)
+    |> count_known_squares()
+  end
+
+  def to_string(%Sudoku.Brain.Board{} = board) do
+    s =
+      Enum.reduce(all_coordinates(), "", fn coord, str ->
+        str <> (at(board, coord) |> Sudoku.Brain.Square.to_string(:known))
+      end)
+
+    # s |> dbg
+
+    # s1 =
+    Enum.map(0..80//9, fn start -> String.slice(s, start, 9) end)
+    |> Enum.join("\n")
+
+    # s1 |> dbg
+  end
+
+  defp condition_definition(defn) when is_binary(defn) do
+    String.split(defn, ["\r\n", "\n\r", "\r", "\n"])
   end
 
   defp update_for_one_square(%Sudoku.Brain.Board{} = board, {v, h} = coordinate) do
