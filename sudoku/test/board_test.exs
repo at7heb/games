@@ -76,7 +76,11 @@ defmodule BoardTest do
 
     "bottom row" |> dbg
     Enum.map(1..9, fn horz -> Sudoku.Brain.Board.at(board4, {9, horz}) end) |> dbg()
-    assert Sudoku.Brain.Board.count_at(board4, {9, 9}) == 8
+    board5 = Sudoku.Brain.Board.update_known(board4)
+    assert Sudoku.Brain.Board.count_at(board5, {1, 9}) == 1
+    assert Sudoku.Brain.Board.count_at(board5, {2, 1}) == 6
+    assert Sudoku.Brain.Board.count_at(board5, {7, 8}) == 8
+    assert Sudoku.Brain.Board.count_at(board5, {9, 9}) == 8
   end
 
   def get_easy_initial_board() do

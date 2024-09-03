@@ -154,6 +154,7 @@ defmodule Sudoku.Brain.Board do
       at(board, coordinate)
       |> Sudoku.Brain.Square.remove(value)
 
+    {coordinate, value, square} |> dbg
     new_game = Map.put(g, coordinate, square)
     %{board | game: new_game}
   end
