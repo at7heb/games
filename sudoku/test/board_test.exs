@@ -40,7 +40,7 @@ defmodule BoardTest do
 
   test "transposing g in board" do
     board = make_random_board()
-    coords = Enum.map(1..50, fn _x -> {:rand.uniform(9), :rand.uniform(9)} end)
+    coords = Enum.map(1..600, fn _x -> {:rand.uniform(9), :rand.uniform(9)} end)
 
     transposed_board = Sudoku.Brain.Board.transpose(board)
 
@@ -65,17 +65,12 @@ defmodule BoardTest do
     assert Sudoku.Brain.Board.count_at(board2, {1, 2}) == 8
     assert Sudoku.Brain.Board.count_at(board2, {2, 1}) == 8
     assert Sudoku.Brain.Board.count_at(board2, {9, 9}) == 9
-    IO.puts("---------------------------------------------------------------")
     board3 = Sudoku.Brain.Board.new("12345678")
     board4 = Sudoku.Brain.Board.update_known(board3)
     assert Sudoku.Brain.Board.count_at(board4, {1, 9}) == 1
     assert Sudoku.Brain.Board.count_at(board4, {2, 1}) == 6
     assert Sudoku.Brain.Board.count_at(board4, {7, 8}) == 8
-    "top row" |> dbg
-    Enum.map(1..9, fn horz -> Sudoku.Brain.Board.at(board4, {1, horz}) end) |> dbg()
 
-    "bottom row" |> dbg
-    Enum.map(1..9, fn horz -> Sudoku.Brain.Board.at(board4, {9, horz}) end) |> dbg()
     board5 = Sudoku.Brain.Board.update_known(board4)
     assert Sudoku.Brain.Board.count_at(board5, {1, 9}) == 1
     assert Sudoku.Brain.Board.count_at(board5, {2, 1}) == 6

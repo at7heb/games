@@ -139,14 +139,11 @@ defmodule Sudoku.Brain.Board do
   end
 
   defp get_update_places(%Sudoku.Brain.Board{} = board) do
-    at(board, {1, 9}) |> dbg
-
     all_coordinates()
     |> Enum.filter(fn coordinate ->
       sq = at(board, coordinate)
       Sudoku.Brain.Square.is_just_one?(sq) and not Sudoku.Brain.Square.have_just_oned?(sq)
     end)
-    |> dbg
   end
 
   defp update_one_square(%Sudoku.Brain.Board{game: g} = board, value, {_v, _h} = coordinate) do
@@ -154,7 +151,6 @@ defmodule Sudoku.Brain.Board do
       at(board, coordinate)
       |> Sudoku.Brain.Square.remove(value)
 
-    {coordinate, value, square} |> dbg
     new_game = Map.put(g, coordinate, square)
     %{board | game: new_game}
   end
@@ -163,8 +159,6 @@ defmodule Sudoku.Brain.Board do
     square =
       at(board, coordinate)
       |> Sudoku.Brain.Square.have_just_oned()
-
-    {"board set oned", coordinate, square} |> dbg
 
     new_game = Map.put(g, coordinate, square)
     %{board | game: new_game}
