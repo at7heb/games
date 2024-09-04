@@ -72,7 +72,7 @@ defmodule Sudoku.Brain.Square do
         if length(values) == 1 do
           String.slice(digits, hd(values), 1)
         else
-          " "
+          "_"
         end
     end
   end

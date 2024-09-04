@@ -70,7 +70,8 @@ defmodule Sudoku.Brain.Board do
 
   def row_for({vert, horz}), do: row_for(vert, horz)
 
-  def row_for(vert, horz) when is_integer(vert) and is_integer(horz) and vert in 1..9 do
+  def row_for(vert, horz)
+      when is_integer(vert) and is_integer(horz) and vert in 1..9 and horz in 1..9 do
     for(column <- 1..9, do: {vert, column})
     |> Enum.filter(fn coordinate -> coordinate != {vert, horz} end)
   end
@@ -91,22 +92,22 @@ defmodule Sudoku.Brain.Board do
 
   def transpose(%Sudoku.Brain.Board{game: g} = board) do
     coords_lower = for(v <- 2..9, h <- 1..(v - 1), do: {v, h})
-    coords_diagonal = for(v <- 1..9, do: {v, v})
+    # coords_diagonal = for(v <- 1..9, do: {v, v})
 
     new_g =
-      Enum.reduce(coords_lower, %{}, fn {v, h} = c, ng ->
+      Enum.reduce(coords_lower, g, fn {v, h} = c, ng ->
         vl = Map.get(g, c)
         vu = Map.get(g, {h, v})
         Map.put(ng, c, vu) |> Map.put({h, v}, vl)
       end)
 
-    newer_g =
-      Enum.reduce(coords_diagonal, new_g, fn c, ng ->
-        vd = Map.get(g, c)
-        Map.put(ng, c, vd)
-      end)
+    # newer_g =
+    #   Enum.reduce(coords_diagonal, new_g, fn c, ng ->
+    #     vd = Map.get(g, c)
+    #     Map.put(ng, c, vd)
+    #   end)
 
-    %{board | game: newer_g}
+    %{board | game: new_g}
   end
 
   def update_known(%Sudoku.Brain.Board{} = board) do
@@ -116,10 +117,10 @@ defmodule Sudoku.Brain.Board do
     |> count_known_squares()
   end
 
-  def to_string(%Sudoku.Brain.Board{} = board) do
+  def to_string(%Sudoku.Brain.Board{} = board, form \\ :known) do
     s =
       Enum.reduce(all_coordinates(), "", fn coord, str ->
-        str <> (at(board, coord) |> Sudoku.Brain.Square.to_string(:known))
+        str <> (at(board, coord) |> Sudoku.Brain.Square.to_string(form))
       end)
 
     # s |> dbg
@@ -129,6 +130,48 @@ defmodule Sudoku.Brain.Board do
     |> Enum.join("\n")
 
     # s1 |> dbg
+  end
+
+  def handle_one_and_onlies(%Sudoku.Brain.Board{} = board) do
+    one_and_only_list = get_one_and_onlies(board)
+
+    Enum.reduce(one_and_only_list, board, fn {coord, value}, board0 ->
+      update_big_square(board0, value, coord)
+    end)
+  end
+
+  defp get_one_and_onlies(%Sudoku.Brain.Board{} = board) do
+    Enum.reduce(each_big_square(), board, fn coords, bd ->
+      each_big_square_one_and_onlies(bd, coords)
+    end)
+  end
+
+  defp each_big_square_one_and_onlies(%Sudoku.Brain.Board{} = board, coords)
+       when is_list(coords) do
+    value_counts =
+      Enum.reduce(coords, %{}, fn coord, vc -> update_vc_map(vc, at(board, coord)) end)
+
+    oao_values = Enum.filter(value_counts, fn {_v, c} -> c == 1 end)
+    # need to return {coordinate, value} list when the square at coordinate
+    # contains value and at least one more.
+    # don't waste time if, e.g. every square is a big square is already known
+    examine_list = for coord <- coords, val <- oao_values, do: {coord, val}
+
+    process_list =
+      Enum.filter(examine_list, fn {c, v} ->
+        vals_at_c = at(board, c)
+        length(vals_at_c) > 1 and v in vals_at_c
+      end)
+
+    new_board = Enum.reduce(process_list, board, fn {c, v}, bd -> update_one_square(bd, v, c) end)
+    new_board
+  end
+
+  defp update_vc_map(%{} = vc_map, %Sudoku.Brain.Square{values: values} = _values) do
+    Enum.reduce(values, vc_map, fn val, vc ->
+      c = Map.get(vc, val, 0)
+      Map.put(vc, val, c + 1)
+    end)
   end
 
   defp condition_definition(defn) when is_binary(defn) do
@@ -186,6 +229,12 @@ defmodule Sudoku.Brain.Board do
     for vert <- 1..9,
         horz <- 1..9,
         do: {vert, horz}
+  end
+
+  def each_big_square() do
+    for vert <- 1..8//3,
+        horz <- 1..8//3,
+        do: big_square_for(vert, horz)
   end
 
   def at(%Sudoku.Brain.Board{game: g} = _bd, coordinate), do: Map.get(g, coordinate)

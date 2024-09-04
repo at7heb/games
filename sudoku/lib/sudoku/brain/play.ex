@@ -12,17 +12,17 @@ defmodule Sudoku.Brain.Play do
   def game_plays(%Sudoku.Brain.Board{} = board) do
     initial_count = Sudoku.Brain.Board.known_count(board)
 
-    new_board =
-      Sudoku.Brain.Board.update_known(board)
+    new_board = Sudoku.Brain.Board.update_known(board)
 
-    # |> Sudoku.Brain.Board.update_known()
+    new2_board = Sudoku.Brain.Board.handle_one_and_onlies(new_board)
+    new3_board = Sudoku.Brain.Board.update_known(new2_board)
 
-    next_count = Sudoku.Brain.Board.known_count(new_board)
+    next_count = Sudoku.Brain.Board.known_count(new3_board)
 
     if initial_count == next_count do
-      new_board
+      new3_board
     else
-      game_plays(new_board)
+      game_plays(new3_board)
     end
   end
 end
