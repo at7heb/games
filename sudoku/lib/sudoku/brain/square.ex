@@ -86,4 +86,6 @@ defmodule Sudoku.Brain.Square do
       _ -> raise "value of multi-cell"
     end
   end
+
+  def all_values(%Sudoku.Brain.Square{values: values}), do: values
 end

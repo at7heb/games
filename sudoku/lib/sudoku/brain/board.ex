@@ -159,7 +159,7 @@ defmodule Sudoku.Brain.Board do
 
     process_list =
       Enum.filter(examine_list, fn {c, v} ->
-        vals_at_c = at(board, c)
+        vals_at_c = vals_at(board, c)
         length(vals_at_c) > 1 and v in vals_at_c
       end)
 
@@ -239,7 +239,10 @@ defmodule Sudoku.Brain.Board do
 
   def at(%Sudoku.Brain.Board{game: g} = _bd, coordinate), do: Map.get(g, coordinate)
 
-  def count_at(%Sudoku.Brain.Board{game: g} = _bd, coordinate) do
-    Map.get(g, coordinate) |> Sudoku.Brain.Square.count()
+  def vals_at(%Sudoku.Brain.Board{} = bd, coordinate),
+    do: at(bd, coordinate) |> Sudoku.Brain.Square.all_values()
+
+  def count_at(%Sudoku.Brain.Board{} = bd, coordinate) do
+    at(bd, coordinate) |> Sudoku.Brain.Square.count()
   end
 end
