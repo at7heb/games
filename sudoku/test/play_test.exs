@@ -57,7 +57,7 @@ defmodule PlayTest do
   end
 
   test "hard board2" do
-    IO.puts("------------------------- the hard one")
+    IO.puts("------------------------- the hard2 one")
 
     get_hard_initial_board2()
     |> Sudoku.Brain.Board.new()

@@ -36,6 +36,19 @@ defmodule Sudoku.Brain.Square do
     %{s | values: new_values}
   end
 
+  def set(%Sudoku.Brain.Square{values: values} = s, value)
+      when is_integer(value) and value >= 1 and value <= 9 do
+    if value not in values do
+      raise "setting #{value} not in #{values}"
+    end
+
+    if length(values) == 1 do
+      raise "setting value redundantly"
+    end
+
+    %{s | values: value}
+  end
+
   def is_just_one?(%Sudoku.Brain.Square{values: values} = _s), do: length(values) == 1
 
   def have_just_oned(%Sudoku.Brain.Square{have_oned: true}),

@@ -132,15 +132,15 @@ defmodule Sudoku.Brain.Board do
     # s1 |> dbg
   end
 
+  # def handle_one_and_onlies(%Sudoku.Brain.Board{} = board) do
+  #   take_care_of_one_and_onlies(board)
+
+  # Enum.reduce(one_and_only_list, board, fn {coord, value}, board0 ->
+  #   update_big_square(board0, value, coord)
+  # end)
+  # end
+
   def handle_one_and_onlies(%Sudoku.Brain.Board{} = board) do
-    one_and_only_list = get_one_and_onlies(board)
-
-    Enum.reduce(one_and_only_list, board, fn {coord, value}, board0 ->
-      update_big_square(board0, value, coord)
-    end)
-  end
-
-  defp get_one_and_onlies(%Sudoku.Brain.Board{} = board) do
     Enum.reduce(each_big_square(), board, fn coords, bd ->
       each_big_square_one_and_onlies(bd, coords)
     end)
@@ -163,7 +163,7 @@ defmodule Sudoku.Brain.Board do
         length(vals_at_c) > 1 and v in vals_at_c
       end)
 
-    new_board = Enum.reduce(process_list, board, fn {c, v}, bd -> update_one_square(bd, v, c) end)
+    new_board = Enum.reduce(process_list, board, fn {c, v}, bd -> set_one_square(bd, v, c) end)
     new_board
   end
 
@@ -211,6 +211,15 @@ defmodule Sudoku.Brain.Board do
     square =
       at(board, coordinate)
       |> Sudoku.Brain.Square.remove(value)
+
+    new_game = Map.put(g, coordinate, square)
+    %{board | game: new_game}
+  end
+
+  defp set_one_square(%Sudoku.Brain.Board{game: g} = board, value, {_v, _h} = coordinate) do
+    square =
+      at(board, coordinate)
+      |> Sudoku.Brain.Square.set(value)
 
     new_game = Map.put(g, coordinate, square)
     %{board | game: new_game}
