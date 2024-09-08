@@ -68,26 +68,47 @@ defmodule Sudoku.Brain.Board do
     %{board | known_count: count}
   end
 
-  def row_for({vert, horz}), do: row_for(vert, horz)
+  # def row_for({vert, horz}, all \\ :exclude), do: row_for(vert, horz, all)
 
-  def row_for(vert, horz)
+  def row_for({vert, horz}, all \\ :exclude)
       when is_integer(vert) and is_integer(horz) and vert in 1..9 and horz in 1..9 do
-    for(column <- 1..9, do: {vert, column})
-    |> Enum.filter(fn coordinate -> coordinate != {vert, horz} end)
+    row = for(column <- 1..9, do: {vert, column})
+
+    case all do
+      :exclude -> Enum.filter(row, fn coordinate -> coordinate != {vert, horz} end)
+      :include -> row
+    end
+  end
+
+  # def col_for({vert, horz}, all \\ :exclude), do: col_for(vert, horz, all)
+
+  def col_for({vert, horz}, all \\ :exclude)
+      when is_integer(vert) and is_integer(horz) and vert in 1..9 and horz in 1..9 do
+    row = for(row <- 1..9, do: {row, horz})
+
+    case all do
+      :exclude -> Enum.filter(row, fn coordinate -> coordinate != {vert, horz} end)
+      :include -> row
+    end
   end
 
   def big_square_for({vert, horz}), do: big_square_for(vert, horz)
 
-  def big_square_for(vert, horz) when is_integer(vert) and is_integer(horz) do
+  def big_square_for(vert, horz, all \\ :exclude) when is_integer(vert) and is_integer(horz) do
     vert0 = 3 * div(vert - 1, 3) + 1
     horz0 = 3 * div(horz - 1, 3) + 1
 
-    for(
-      row <- vert0..(vert0 + 2),
-      column <- horz0..(horz0 + 2),
-      do: {row, column}
-    )
-    |> Enum.filter(fn coordinate -> coordinate != {vert, horz} end)
+    big_square =
+      for(
+        row <- vert0..(vert0 + 2),
+        column <- horz0..(horz0 + 2),
+        do: {row, column}
+      )
+
+    case all do
+      :exclude -> Enum.filter(big_square, fn coordinate -> coordinate != {vert, horz} end)
+      :include -> big_square
+    end
   end
 
   def transpose(%Sudoku.Brain.Board{game: g} = board) do
@@ -157,21 +178,70 @@ defmodule Sudoku.Brain.Board do
     # don't waste time if, e.g. every square is a big square is already known
     examine_list = for coord <- coords, val <- oao_values, do: {coord, val}
 
-    process_list =
+    locations_list =
       Enum.filter(examine_list, fn {c, v} ->
         vals_at_c = vals_at(board, c)
         length(vals_at_c) > 1 and v in vals_at_c
       end)
 
-    new_board = Enum.reduce(process_list, board, fn {c, v}, bd -> set_one_square(bd, v, c) end)
+    new_board = Enum.reduce(locations_list, board, fn {c, v}, bd -> set_one_square(bd, v, c) end)
     new_board
   end
 
+  @doc """
+  include the numbers is the square in the value -> count map.
+  """
   defp update_vc_map(%{} = vc_map, %Sudoku.Brain.Square{values: values} = _values) do
     Enum.reduce(values, vc_map, fn val, vc ->
       c = Map.get(vc, val, 0)
       Map.put(vc, val, c + 1)
     end)
+  end
+
+  @doc """
+
+  """
+  def handle_2or3_and_onlies(%Sudoku.Brain.Board{} = board) do
+    Enum.reduce(each_big_square(), board, fn coords, bd ->
+      each_big_square_2or3_and_onlies(bd, coords)
+    end)
+  end
+
+  def each_big_square_2or3_and_onlies(%Sudoku.Brain.Board{} = board, coords)
+      when is_list(coords) do
+    for val <- 1..9 do
+      find_all_in(board, val, coords)
+      |> Enum.filter(fn {_val, locations} -> length(locations) == 2 or length(locations) == 3 end)
+      |> handle_2or3_if_horz_colinear(board, val)
+      |> handle_2or3_if_vert_colinear(board, val)
+    end
+  end
+
+  def find_all_in(%Sudoku.Brain.Board{} = board, n, coords)
+      when is_list(coords) do
+    Enum.filter(coords, fn coord -> n in vals_at(board, coord) end)
+  end
+
+  def coord_for_horz({vert, _horz}), do: vert
+  def coord_for_vert({_vert, horz}), do: horz
+
+  def handle_2or3_if_horz_colinear(places, %Sudoku.Brain.Board{} = board, value) do
+    handle_2or3_if_colinear(places, board, value, &coord_for_horz/1)
+  end
+
+  def handle_2or3_if_vert_colinear(places, %Sudoku.Brain.Board{} = board, value) do
+    handle_2or3_if_colinear(places, board, value, &coord_for_vert/1)
+  end
+
+  def handle_2or3_if_colinear(places, board, value, coord_fun) do
+    coords_to_test = Enum.map(places, &coord_fun.(&1))
+    colinear? = Enum.min(coords_to_test) == Enum.max(coords_to_test)
+
+    if colinear? do
+      1
+    else
+      board
+    end
   end
 
   defp condition_definition(defn) when is_binary(defn) do
@@ -243,7 +313,7 @@ defmodule Sudoku.Brain.Board do
   def each_big_square() do
     for vert <- 1..8//3,
         horz <- 1..8//3,
-        do: big_square_for(vert, horz)
+        do: big_square_for(vert, horz, :include)
   end
 
   def at(%Sudoku.Brain.Board{game: g} = _bd, coordinate), do: Map.get(g, coordinate)

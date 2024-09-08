@@ -17,7 +17,9 @@ defmodule Sudoku.Brain.Play do
     new2_board = Sudoku.Brain.Board.handle_one_and_onlies(new_board)
     new3_board = Sudoku.Brain.Board.update_known(new2_board)
 
-    next_count = Sudoku.Brain.Board.known_count(new3_board)
+    new4_board = Sudoku.Brain.Board.handle_2or3_and_onlies(new3_board)
+    new5_board = Sudoku.Brain.Board.update_known(new4_board)
+    next_count = Sudoku.Brain.Board.known_count(new5_board)
 
     if initial_count == next_count do
       new3_board
