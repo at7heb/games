@@ -188,9 +188,9 @@ defmodule Sudoku.Brain.Board do
     new_board
   end
 
-  @doc """
-  include the numbers is the square in the value -> count map.
-  """
+  # @doc """
+  # include the numbers is the square in the value -> count map.
+  # """
   defp update_vc_map(%{} = vc_map, %Sudoku.Brain.Square{values: values} = _values) do
     Enum.reduce(values, vc_map, fn val, vc ->
       c = Map.get(vc, val, 0)
@@ -233,15 +233,57 @@ defmodule Sudoku.Brain.Board do
     handle_2or3_if_colinear(places, board, value, &coord_for_vert/1)
   end
 
-  def handle_2or3_if_colinear(places, board, value, coord_fun) do
-    coords_to_test = Enum.map(places, &coord_fun.(&1))
-    colinear? = Enum.min(coords_to_test) == Enum.max(coords_to_test)
+  def handle_2or3_if_colinear(places, %Sudoku.Brain.Board{} = board, value, coord_fun) do
+    coords_to_test = Enum.map(places, &coord_fun.(&1)) |> dbg
+    colinear? = Enum.min(coords_to_test) == Enum.max(coords_to_test) |> dbg
 
     if colinear? do
-      1
+      # remove_outside_big_square(board, places, value, coord_fun)
+      remove_outisde_big_square(places, board, value, coord_fun)
     else
-      board
+      # board
+      nil
     end
+  end
+
+  def remove_outisde_big_square(places, %Sudoku.Brain.Board{} = board, value, coord_fun) do
+    coords_to_consider = colinear_squares_outside_current(hd(places), coord_fun)
+
+    Enum.reduce(coords_to_consider, board, fn coord, bd ->
+      remove_from_square(bd, coord, value)
+    end)
+  end
+
+  def colinear_squares_outside_current({_r, _c} = reference_place, coord_fun) do
+    # could use arithmetic, but a simple cond statement works...
+    flipped_reference_place = {elem(reference_place, 1), elem(reference_place, 0)}
+    reference_coord_to_extend = coord_fun.(flipped_reference_place)
+    reference_coord_to_duplicate = coord_fun.(reference_place)
+
+    varying_coord =
+      cond do
+        reference_coord_to_extend in [1, 2, 3] -> [4, 5, 6, 7, 8, 9]
+        reference_coord_to_extend in [4, 5, 6] -> [1, 2, 3, 7, 8, 9]
+        reference_coord_to_extend in [7, 8, 9] -> [1, 2, 3, 4, 5, 6]
+      end
+
+    list_one_way = Enum.zip(varying_coord, List.duplicate(reference_coord_to_duplicate, 6))
+    list_other_way = Enum.zip(List.duplicate(reference_coord_to_duplicate, 6), varying_coord)
+    coord_fun.({list_other_way, list_one_way}) |> dbg
+  end
+
+  def remove_from_square(%Sudoku.Brain.Board{} = board, coord, value) do
+    new_square = at(board, coord) |> Sudoku.Brain.Square.remove(value)
+    replace_square_at(board, new_square, coord)
+  end
+
+  def replace_square_at(
+        %Sudoku.Brain.Board{game: g} = board,
+        %Sudoku.Brain.Square{} = new_square,
+        {_v, _h} = coord
+      ) do
+    new_game = Map.put(g, new_square, coord)
+    %{board | game: new_game}
   end
 
   defp condition_definition(defn) when is_binary(defn) do
