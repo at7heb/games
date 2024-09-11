@@ -17,41 +17,41 @@ defmodule PlayTest do
     # |> Sudoku.Brain.Board.to_string()
     # |> IO.puts()
 
-    board = Sudoku.Brain.Play.play(get_easy_initial_board())
-    # IO.puts("-------------------------")
+    # board = Sudoku.Brain.Play.play(get_easy_initial_board())
+    # # IO.puts("-------------------------")
+    # # Sudoku.Brain.Board.to_string(board) |> IO.puts()
+    # IO.puts("------------------------- easy")
     # Sudoku.Brain.Board.to_string(board) |> IO.puts()
-    IO.puts("------------------------- easy")
-    Sudoku.Brain.Board.to_string(board) |> IO.puts()
-    # assert Sudoku.Brain.Board.known_count(board) == 81
+    # # assert Sudoku.Brain.Board.known_count(board) == 81
   end
 
   test "medium board" do
-    IO.puts("-------------------------  medium")
+    # IO.puts("-------------------------  medium")
 
-    get_medium_initial_board()
-    |> Sudoku.Brain.Board.new()
-    |> Sudoku.Brain.Board.to_string()
-    |> IO.puts()
+    # get_medium_initial_board()
+    # |> Sudoku.Brain.Board.new()
+    # |> Sudoku.Brain.Board.to_string()
+    # |> IO.puts()
 
-    board = Sudoku.Brain.Play.play(get_medium_initial_board())
-    IO.puts("-------------------------")
-    Sudoku.Brain.Board.to_string(board) |> IO.puts()
+    # board = Sudoku.Brain.Play.play(get_medium_initial_board())
+    # IO.puts("-------------------------")
+    # Sudoku.Brain.Board.to_string(board) |> IO.puts()
 
     # assert Sudoku.Brain.Board.known_count(board) > 25
   end
 
   test "hard board" do
-    IO.puts("------------------------- the hard one")
+    # IO.puts("------------------------- the hard one")
 
-    get_hard_initial_board()
-    |> Sudoku.Brain.Board.new()
-    |> Sudoku.Brain.Board.to_string()
-    |> IO.puts()
+    # get_hard_initial_board()
+    # |> Sudoku.Brain.Board.new()
+    # |> Sudoku.Brain.Board.to_string()
+    # |> IO.puts()
 
-    board = Sudoku.Brain.Play.play(get_hard_initial_board())
-    IO.puts("-------------------------")
-    Sudoku.Brain.Board.to_string(board) |> IO.puts()
-    {"hard board", Sudoku.Brain.Board.known_count(board)} |> dbg
+    # board = Sudoku.Brain.Play.play(get_hard_initial_board())
+    # IO.puts("-------------------------")
+    # Sudoku.Brain.Board.to_string(board) |> IO.puts()
+    # {"hard board", Sudoku.Brain.Board.known_count(board)} |> dbg
 
     # assert Sudoku.Brain.Board.known_count(board) > 25
   end
@@ -64,7 +64,7 @@ defmodule PlayTest do
     |> Sudoku.Brain.Board.to_string()
     |> IO.puts()
 
-    board = Sudoku.Brain.Play.play(get_hard_initial_board2())
+    board = Sudoku.Brain.Play.play(get_hard_initial_board2() |> Sudoku.Brain.Board.new())
     IO.puts("-------------------------")
     Sudoku.Brain.Board.to_string(board, :short) |> IO.puts()
     {"hard board2", Sudoku.Brain.Board.known_count(board)} |> dbg

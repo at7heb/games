@@ -9,6 +9,8 @@ defmodule Sudoku.Brain.Play do
     |> game_plays()
   end
 
+  def play(%Sudoku.Brain.Board{} = board), do: game_plays(board)
+
   def game_plays(%Sudoku.Brain.Board{} = board) do
     initial_count = Sudoku.Brain.Board.known_count(board)
 
@@ -22,9 +24,9 @@ defmodule Sudoku.Brain.Play do
     next_count = Sudoku.Brain.Board.known_count(new5_board)
 
     if initial_count == next_count do
-      new3_board
+      new5_board
     else
-      game_plays(new3_board)
+      game_plays(new5_board)
     end
   end
 end

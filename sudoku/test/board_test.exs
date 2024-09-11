@@ -17,7 +17,7 @@ defmodule BoardTest do
   test "row for" do
     vert = :rand.uniform(9)
     horz = :rand.uniform(9)
-    r = Sudoku.Brain.Board.row_for(vert, horz)
+    r = Sudoku.Brain.Board.row_for({vert, horz})
     horizontals = Enum.map(r, &elem(&1, 1)) |> Enum.uniq()
     verticals = Enum.map(r, &elem(&1, 0)) |> Enum.uniq()
     assert length(horizontals) == 8
@@ -29,7 +29,7 @@ defmodule BoardTest do
   test "big square for" do
     vert = :rand.uniform(9)
     horz = :rand.uniform(9)
-    r = Sudoku.Brain.Board.big_square_for(vert, horz)
+    r = Sudoku.Brain.Board.big_square_for({vert, horz})
     horizontals = Enum.map(r, &elem(&1, 1)) |> Enum.uniq()
     verticals = Enum.map(r, &elem(&1, 0)) |> Enum.uniq()
     assert length(horizontals) == 3

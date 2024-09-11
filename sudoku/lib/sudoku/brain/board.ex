@@ -210,16 +210,20 @@ defmodule Sudoku.Brain.Board do
   def each_big_square_2or3_and_onlies(%Sudoku.Brain.Board{} = board, coords)
       when is_list(coords) do
     for val <- 1..9 do
-      find_all_in(board, val, coords)
-      |> Enum.filter(fn {_val, locations} -> length(locations) == 2 or length(locations) == 3 end)
-      |> handle_2or3_if_horz_colinear(board, val)
-      |> handle_2or3_if_vert_colinear(board, val)
+      locations = find_all_in(board, val, coords)
+
+      if length(locations) == 2 or length(locations) == 3 do
+        board1 = handle_2or3_if_horz_colinear(locations, board, val)
+        board2 = handle_2or3_if_vert_colinear(locations, board1, val)
+      else
+        board
+      end
     end
   end
 
   def find_all_in(%Sudoku.Brain.Board{} = board, n, coords)
       when is_list(coords) do
-    Enum.filter(coords, fn coord -> n in vals_at(board, coord) end)
+    Enum.filter(coords, fn coord -> n in vals_at(board, coord) end) |> dbg
   end
 
   def coord_for_horz({vert, _horz}), do: vert
