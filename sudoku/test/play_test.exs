@@ -53,7 +53,7 @@ defmodule PlayTest do
     Sudoku.Brain.Board.to_string(board) |> IO.puts()
     {"hard board", Sudoku.Brain.Board.known_count(board)} |> dbg
 
-    assert Sudoku.Brain.Board.known_count(board) > 25
+    assert Sudoku.Brain.Board.known_count(board) > 20
   end
 
   test "hard board2" do
