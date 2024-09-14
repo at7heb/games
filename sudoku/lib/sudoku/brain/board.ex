@@ -55,6 +55,11 @@ defmodule Sudoku.Brain.Board do
 
   def known_count(%Sudoku.Brain.Board{known_count: count} = _b), do: count
 
+  def values_count(%Sudoku.Brain.Board{} = bd) do
+    coords = all_coordinates()
+    Enum.reduce(coords, 0, fn coord, count -> count + count_at(bd, coord) end)
+  end
+
   defp count_known_squares(%Sudoku.Brain.Board{game: g} = board) do
     # Enum.map(all_coordinates(), fn coordinate -> {coordinate, Map.get(g, coordinate)} end)
 
@@ -192,10 +197,11 @@ defmodule Sudoku.Brain.Board do
   # include the numbers is the square in the value -> count map.
   # """
   defp update_vc_map(%{} = vc_map, %Sudoku.Brain.Square{values: values} = _values) do
-    Enum.reduce(values, vc_map, fn val, vc ->
-      c = Map.get(vc, val, 0)
-      Map.put(vc, val, c + 1)
-    end)
+    _rv =
+      Enum.reduce(values, vc_map, fn val, vc ->
+        c = Map.get(vc, val, 0)
+        Map.put(vc, val, c + 1)
+      end)
   end
 
   @doc """
@@ -207,46 +213,62 @@ defmodule Sudoku.Brain.Board do
     end)
   end
 
+  def each_big_square_2or3_and_onlies([%Sudoku.Brain.Board{} = _board | boards], _coords) do
+    raise "many boards in 2 and only: #{length(boards) + 1}"
+    # each_big_square_2or3_and_onlies(board, coords)
+  end
+
   def each_big_square_2or3_and_onlies(%Sudoku.Brain.Board{} = board, coords)
       when is_list(coords) do
-    for val <- 1..9 do
-      locations = find_all_in(board, val, coords)
+    processor = fn board, value, coords ->
+      locations = find_all_in(board, value, coords)
 
       if length(locations) == 2 or length(locations) == 3 do
-        board1 = handle_2or3_if_horz_colinear(locations, board, val)
-        board2 = handle_2or3_if_vert_colinear(locations, board1, val)
+        handle_2or3_if_horz_colinear(board, locations, value)
+        |> handle_2or3_if_vert_colinear(locations, value)
       else
         board
       end
     end
+
+    Enum.reduce(1..9, board, fn val, bd -> processor.(bd, val, coords) end)
+    # for val <- 1..9 do
+    #   locations = find_all_in(board, val, coords)
+
+    #   rv = if length(locations) == 2 or length(locations) == 3 do
+    #     board1 = handle_2or3_if_horz_colinear(locations, board, val)
+    #     handle_2or3_if_vert_colinear(locations, board1, val)
+    #   else
+    #     board
+    #   end
+    # end
   end
 
   def find_all_in(%Sudoku.Brain.Board{} = board, n, coords)
       when is_list(coords) do
-    Enum.filter(coords, fn coord -> n in vals_at(board, coord) end) |> dbg
+    Enum.filter(coords, fn coord -> n in vals_at(board, coord) end)
   end
 
   def coord_for_horz({vert, _horz}), do: vert
   def coord_for_vert({_vert, horz}), do: horz
 
-  def handle_2or3_if_horz_colinear(places, %Sudoku.Brain.Board{} = board, value) do
-    handle_2or3_if_colinear(places, board, value, &coord_for_horz/1)
+  def handle_2or3_if_horz_colinear(%Sudoku.Brain.Board{} = board, places, value) do
+    handle_2or3_if_colinear(board, places, value, &coord_for_horz/1)
   end
 
-  def handle_2or3_if_vert_colinear(places, %Sudoku.Brain.Board{} = board, value) do
-    handle_2or3_if_colinear(places, board, value, &coord_for_vert/1)
+  def handle_2or3_if_vert_colinear(%Sudoku.Brain.Board{} = board, places, value) do
+    handle_2or3_if_colinear(board, places, value, &coord_for_vert/1)
   end
 
-  def handle_2or3_if_colinear(places, %Sudoku.Brain.Board{} = board, value, coord_fun) do
-    coords_to_test = Enum.map(places, &coord_fun.(&1)) |> dbg
-    colinear? = Enum.min(coords_to_test) == Enum.max(coords_to_test) |> dbg
+  def handle_2or3_if_colinear(%Sudoku.Brain.Board{} = board, places, value, coord_fun) do
+    coords_to_test = Enum.map(places, &coord_fun.(&1))
+    colinear? = Enum.min(coords_to_test) == Enum.max(coords_to_test)
 
     if colinear? do
-      # remove_outside_big_square(board, places, value, coord_fun)
+      # TODO?? remove_outside_big_square(board, places, value, coord_fun)
       remove_outisde_big_square(places, board, value, coord_fun)
     else
-      # board
-      nil
+      board
     end
   end
 
@@ -273,11 +295,16 @@ defmodule Sudoku.Brain.Board do
 
     list_one_way = Enum.zip(varying_coord, List.duplicate(reference_coord_to_duplicate, 6))
     list_other_way = Enum.zip(List.duplicate(reference_coord_to_duplicate, 6), varying_coord)
-    coord_fun.({list_other_way, list_one_way}) |> dbg
+    coord_fun.({list_other_way, list_one_way})
   end
 
   def remove_from_square(%Sudoku.Brain.Board{} = board, coord, value) do
     new_square = at(board, coord) |> Sudoku.Brain.Square.remove(value)
+
+    # if length(new_square.values) != count_at(board, coord) do
+    #   "removed #{value} from square at {#{elem(coord, 0)},#{elem(coord, 1)}}" |> dbg
+    # end
+
     replace_square_at(board, new_square, coord)
   end
 

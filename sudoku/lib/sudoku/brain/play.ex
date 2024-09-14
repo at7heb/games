@@ -12,21 +12,26 @@ defmodule Sudoku.Brain.Play do
   def play(%Sudoku.Brain.Board{} = board), do: game_plays(board)
 
   def game_plays(%Sudoku.Brain.Board{} = board) do
-    initial_count = Sudoku.Brain.Board.known_count(board)
+    initial_count = Sudoku.Brain.Board.values_count(board)
 
-    new_board = Sudoku.Brain.Board.update_known(board)
+    new_board =
+      Sudoku.Brain.Board.update_known(board)
+      |> Sudoku.Brain.Board.handle_one_and_onlies()
+      |> Sudoku.Brain.Board.update_known()
+      |> Sudoku.Brain.Board.handle_2or3_and_onlies()
+      |> Sudoku.Brain.Board.update_known()
+      |> Sudoku.Brain.Board.handle_one_and_onlies()
+      |> Sudoku.Brain.Board.update_known()
+      |> Sudoku.Brain.Board.handle_2or3_and_onlies()
+      |> Sudoku.Brain.Board.update_known()
 
-    new2_board = Sudoku.Brain.Board.handle_one_and_onlies(new_board)
-    new3_board = Sudoku.Brain.Board.update_known(new2_board)
-
-    new4_board = Sudoku.Brain.Board.handle_2or3_and_onlies(new3_board)
-    new5_board = Sudoku.Brain.Board.update_known(new4_board)
-    next_count = Sudoku.Brain.Board.known_count(new5_board)
+    next_count = Sudoku.Brain.Board.values_count(new_board)
+    {initial_count, next_count} |> dbg
 
     if initial_count == next_count do
-      new5_board
+      new_board
     else
-      game_plays(new5_board)
+      game_plays(new_board)
     end
   end
 end
