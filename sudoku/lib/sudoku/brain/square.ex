@@ -70,9 +70,9 @@ defmodule Sudoku.Brain.Square do
 
     case form do
       :full ->
-        values
-        |> Enum.map(fn v -> Integer.to_string(v) end)
-        |> Enum.join()
+        (values
+         |> Enum.map(fn v -> Integer.to_string(v) end)
+         |> Enum.join()) <> "|"
 
       :short ->
         if length(values) == 1 do

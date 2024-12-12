@@ -65,10 +65,10 @@ defmodule PlayTest do
     |> IO.puts()
 
     board = Sudoku.Brain.Play.play(get_hard_initial_board2() |> Sudoku.Brain.Board.new())
-    IO.puts("-------------------------")
-    Sudoku.Brain.Board.to_string(board, :short) |> IO.puts()
+    IO.puts("the hard2 one -------------------------")
+    Sudoku.Brain.Board.to_string(board, :full) |> IO.puts()
     {"hard board2", Sudoku.Brain.Board.known_count(board)} |> dbg
-    # assert Sudoku.Brain.Board.known_count(board) > 25
+    assert Sudoku.Brain.Board.known_count(board) > 20
   end
 
   def get_easy_initial_board() do
