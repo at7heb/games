@@ -35,11 +35,8 @@ defmodule Gomoku.Play do
   end
 
   def ask_human_for_move(board) do
-    # Prompt the user for a move
-    IO.puts("Hello human! Enter your selection (e.g., aA or Aa): ")
-
     # Read the move from the user
-    new_square = IO.gets("prompt?") |> String.trim()
+    new_square = IO.gets("Hello human! Enter your selection (e.g., aA or Aa): ") |> String.trim()
 
     # Validate the move
     case Gomoku.Board.validate_selection(board, new_square) do

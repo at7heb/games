@@ -10,7 +10,21 @@ defmodule Gomoku.Intelligence do
     # Implement the logic for making a move
     # This is a placeholder implementation
     # Replace with actual logic to determine the move
-    new_square = "A1"
-    Gomoku.Board.update_board(board, new_square)
+    row = Enum.random(board.v_list)
+    col = Enum.random(board.h_list)
+    new_square = "#{col}#{row}"
+
+    Gomoku.Board.validate_selection(board, new_square)
+    |> case do
+      :ok ->
+        # Update the board with the move
+        IO.puts("Intelligent move: #{new_square} by player #{board.current_player}")
+        Gomoku.Board.update_board(board, new_square)
+
+      {:error, reason} ->
+        IO.puts("Invalid move: #{new_square} because #{reason}")
+        # Retry or handle the error as needed
+        make_move(board)
+    end
   end
 end

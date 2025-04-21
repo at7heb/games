@@ -21,3 +21,6 @@ gomoku-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Ignore the generated command
+gomoku

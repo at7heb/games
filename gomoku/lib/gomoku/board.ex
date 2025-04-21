@@ -40,9 +40,7 @@ defmodule Gomoku.Board do
     if String.length(new_square) != 2 do
       {:error, "Invalid selection1"}
     else
-      [h, v] = String.split(new_square, "", trim: true) |> dbg
-      {h, v} |> dbg
-      {hd(board.h_list), hd(board.v_list)} |> dbg
+      [h, v] = String.split(new_square, "", trim: true)
 
       if h in board.h_list and v in board.v_list do
         if Map.has_key?(board.grid, new_square) do
@@ -95,8 +93,11 @@ defmodule Gomoku.Board do
     IO.puts("Board Size: #{board.size}")
     IO.puts("Grid: #{inspect(board.grid)}")
     IO.puts("State: #{board.state}")
+    boundary = String.duplicate("-", board.size + 2)
 
     # Display the grid
+    IO.puts(boundary)
+
     for row <- 0..(board.size - 1) do
       for col <- 0..(board.size - 1) do
         square = "#{Enum.at(board.h_list, col)}#{Enum.at(board.v_list, row)}"
@@ -112,11 +113,18 @@ defmodule Gomoku.Board do
             :empty -> " "
           end
 
-        IO.write("#{output_color} ")
-      end
+        {left_annotation, right_annotation} =
+          cond do
+            col == 0 -> {"|", ""}
+            col == board.size - 1 -> {"", "|\n"}
+            true -> {"", ""}
+          end
 
-      IO.puts("")
+        IO.write("#{left_annotation}#{output_color}#{right_annotation}")
+      end
     end
+
+    IO.puts(boundary)
 
     board
   end
@@ -141,6 +149,7 @@ defmodule Gomoku.Board do
   def switch_player(%__MODULE__{} = board) do
     # Switch the current player
     new_player = if board.current_player == :black, do: :white, else: :black
+    IO.puts("Switching player from #{board.current_player} to #{new_player}")
 
     %__MODULE__{
       board
