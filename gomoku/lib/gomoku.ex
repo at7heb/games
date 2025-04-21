@@ -16,6 +16,7 @@ defmodule Gomoku do
     {board_size, user_color} = parse_args(argv)
     IO.puts("Board size: #{board_size}")
     IO.puts("User color: #{user_color}")
+    Gomoku.Play.start(board_size, user_color)
   end
 
   defp parse_args(args) do
