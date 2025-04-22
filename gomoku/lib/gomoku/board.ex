@@ -67,7 +67,6 @@ defmodule Gomoku.Board do
     %__MODULE__{
       board
       | grid: grid,
-        current_player: if(color == :black, do: :white, else: :black),
         state: state
     }
   end
