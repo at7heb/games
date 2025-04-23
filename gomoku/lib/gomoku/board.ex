@@ -26,11 +26,19 @@ defmodule Gomoku.Board do
   end
 
   def canonicalize(coord) when is_binary(coord) do
-    coord
-    |> String.trim()
-    |> String.split("", trim: true)
-    |> Enum.sort(fn a, b -> a < b end)
-    |> Enum.join()
+    [coord1, coord2] =
+      String.trim(coord)
+      |> String.split("", trim: true)
+
+    canonicalize(coord1, coord2)
+  end
+
+  def canonicalize(coord1, coord2) do
+    cond do
+      coord1 >= "a" and coord1 <= "s" and coord2 >= "A" and coord2 <= "S" -> "#{coord2}#{coord1}"
+      coord1 >= "A" and coord1 <= "S" and coord2 >= "a" and coord2 <= "s" -> "#{coord1}#{coord2}"
+      true -> raise "same case or invalid coordinates #{coord1} and #{coord2}"
+    end
   end
 
   def validate_selection(%__MODULE__{} = board, new_square) do
@@ -57,7 +65,7 @@ defmodule Gomoku.Board do
   def update_board(%__MODULE__{} = board, new_square) do
     new_square = canonicalize(new_square)
     color = board.current_player
-
+    {new_square, color} |> dbg
     # Update the board with the new move
     grid = Map.put(board.grid, new_square, color)
 
@@ -75,7 +83,7 @@ defmodule Gomoku.Board do
     # Check for win condition
     # This is a placeholder implementation
     # Replace with actual logic to check for a win
-    if map_size(grid) >= 5 do
+    if map_size(grid) >= 49 do
       if color == :black do
         :black_won
       else
@@ -102,15 +110,7 @@ defmodule Gomoku.Board do
         square = "#{Enum.at(board.h_list, col)}#{Enum.at(board.v_list, row)}"
         color = Map.get(board.grid, square, :empty)
 
-        output_color =
-          case color do
-            # Black
-            :black -> "X"
-            # White
-            :white -> "O"
-            # Reset
-            :empty -> " "
-          end
+        output_color = one_character_color(color)
 
         {left_annotation, right_annotation} =
           cond do
@@ -126,6 +126,19 @@ defmodule Gomoku.Board do
     IO.puts(boundary)
 
     board
+  end
+
+  def one_character_color(color) do
+    # Convert the color to a single character
+    case color do
+      # Black
+      :black -> "X"
+      # White
+      :white -> "O"
+      # Reset
+      :empty -> " "
+      _ -> " "
+    end
   end
 
   def game_over?(%__MODULE__{} = board) do
