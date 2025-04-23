@@ -161,7 +161,7 @@ defmodule Gomoku.Board do
   def switch_player(%__MODULE__{} = board) do
     # Switch the current player
     new_player = if board.current_player == :black, do: :white, else: :black
-    IO.puts("Switching player from #{board.current_player} to #{new_player}")
+    # IO.puts("Switching player from #{board.current_player} to #{new_player}")
 
     %__MODULE__{
       board

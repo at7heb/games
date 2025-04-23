@@ -10,15 +10,13 @@ defmodule Gomoku.Intelligence do
     # Implement the logic for making a move
     # This is a placeholder implementation
     # Replace with actual logic to determine the move
-    Gomoku.Rle.new(board)
-    |> dbg
-
-    row = Enum.random(board.v_list)
-    col = Enum.random(board.h_list)
-    new_square = "#{col}#{row}"
+    rle = Gomoku.Rle.new(board)
+    my_color = if board.current_player == :black, do: "X", else: "O"
+    place = find_a_place(rle, my_color)
+    IO.puts("Intelligent move: #{place} by player #{board.current_player}")
 
     new_board =
-      Gomoku.Board.validate_selection(board, new_square)
+      Gomoku.Board.validate_selection(board, place)
       |> case do
         :ok ->
           # Update the board with the move
@@ -31,7 +29,9 @@ defmodule Gomoku.Intelligence do
           make_move(board)
       end
 
-    Gomoku.Rle.new(new_board) |> dbg
+    # Gomoku.Rle.new(new_board) |> dbg
     new_board
   end
+
+  def find_a_place(%__MODULE__{} = rle, my_color)
 end
