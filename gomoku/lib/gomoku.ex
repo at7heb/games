@@ -3,6 +3,7 @@ defmodule Gomoku do
   Documentation for `Gomoku`.
   """
 
+  @board_tiny 7
   @board_small 9
   @board_default 15
   @board_large 19
@@ -25,10 +26,12 @@ defmodule Gomoku do
 
     size_fn = fn arg, size ->
       case arg do
+        "tiny" -> @board_tiny
         "small" -> @board_small
         "default" -> @board_default
         "medium" -> @board_default
         "large" -> @board_large
+        {:board, "tiny"} -> @board_tiny
         {:board, "small"} -> @board_small
         {:board, "medium"} -> @board_default
         {:board, "default"} -> @board_default
@@ -47,7 +50,7 @@ defmodule Gomoku do
       end
     end
 
-    board_size = Enum.reduce(option_list, @board_default, size_fn)
+    board_size = Enum.reduce(option_list, @board_tiny, size_fn)
     user_color = Enum.reduce(option_list, @color_default, color_fn)
     {board_size, user_color}
   end
