@@ -31,7 +31,7 @@ defmodule Gomoku.MixProject do
   defp escript do
     [
       main_module: Gomoku,
-      name: "gomoku"
+      name: "gomoku-app"
     ]
   end
 end

@@ -23,4 +23,4 @@ gomoku-*.tar
 /tmp/
 
 # Ignore the generated command
-gomoku
+gomoku-app
