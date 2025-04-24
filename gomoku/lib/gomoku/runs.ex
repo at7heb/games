@@ -55,14 +55,35 @@ defmodule Gomoku.Runs do
   def make_h_runs({%__MODULE__{} = runs, h_list, v_list}) do
     # Create the horizontal Runs
     # create starting coordinates for each
-    runs = Enum.map(v_list, fn v -> {"#{v}A", scan_one(v, h_list, runs.grid)} end)
-    {%{runs | h_runs: runs}, h_list, v_list}
+    runs_list =
+      Enum.map(
+        v_list,
+        fn v ->
+          Enum.map(
+            h_list,
+            fn h -> Map.get(runs.grid, "#{h}#{v}", " ") |> Gomoku.Board.one_character_color() end
+          )
+          |> Enum.join()
+        end
+      )
+
+    {%{runs | h_runs: runs_list}, h_list, v_list}
   end
 
   def make_v_runs({%__MODULE__{} = runs, h_list, v_list}) do
     # Create the vertical Runs
-    runs = Enum.map(h_list, fn h -> {"#{h}a", scan_one(h, v_list, runs.grid)} end)
-    {%{runs | v_runs: runs}, h_list, v_list}
+    runs_list =
+      Enum.map(
+        h_list,
+        fn h ->
+          Enum.map(v_list, fn v ->
+            Map.get(runs.grid, "#{h}#{v}", " ") |> Gomoku.Board.one_character_color()
+          end)
+          |> Enum.join()
+        end
+      )
+
+    {%{runs | v_runs: runs_list}, h_list, v_list}
   end
 
   def make_dr_runs({%__MODULE__{} = runs, h_list, v_list}) do

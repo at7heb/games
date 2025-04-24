@@ -11,8 +11,8 @@ defmodule Gomoku.Intelligence do
     # This is a placeholder implementation
     # Replace with actual logic to determine the move
     runs = Gomoku.Runs.new(board)
-    my_color = if board.current_player == :black, do: "X", else: "O"
-    place = find_a_place(runs, "X")
+    # my_color = if board.current_player == :black, do: "X", else: "O"
+    place = find_a_place(runs, board.current_player)
     # IO.puts("Intelligent move: #{place} by player #{board.current_player}")
 
     new_board =
