@@ -33,5 +33,25 @@ defmodule Gomoku.Intelligence do
     new_board
   end
 
-  def find_a_place(%__MODULE__{} = rle, my_color)
+  def find_a_place(%__MODULE__{} = runs, :black = my_color) do
+    offense_patterns = [
+      ~r/ 4X/,
+      ~r/4X. /,
+      ~r/[2-9A-Z] 3X. /,
+      ~r/. 3X[2-9A-Z ]/,
+      ~r/ 1X1 2X. /,
+      ~r/ 2X1 1X. /,
+      ~r/ 3X[2-9A-Z ]/,
+      ~r/ 3X[2-9A-Z] /,
+      ~r/[2-9A-Z] 2X[2-9A-Z] /,
+      ~r/[3-9A-Z] 1X[2-9A-Z] /,
+      ~r/ 1X[4-9A-Z] /,
+      ~r/[4-9A-Z] 1X. /,
+      ~r//
+    ]
+    defense_patterns =
+  end
+
+  def find_a_place(%__MODULE__{} = rle, :white = my_color) do
+  end
 end
