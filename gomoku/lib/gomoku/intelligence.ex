@@ -10,48 +10,78 @@ defmodule Gomoku.Intelligence do
     # Implement the logic for making a move
     # This is a placeholder implementation
     # Replace with actual logic to determine the move
-    rle = Gomoku.Rle.new(board)
+    runs = Gomoku.Runs.new(board)
     my_color = if board.current_player == :black, do: "X", else: "O"
-    place = find_a_place(rle, my_color)
-    IO.puts("Intelligent move: #{place} by player #{board.current_player}")
+    place = find_a_place(runs, "X")
+    # IO.puts("Intelligent move: #{place} by player #{board.current_player}")
 
     new_board =
       Gomoku.Board.validate_selection(board, place)
       |> case do
         :ok ->
           # Update the board with the move
-          IO.puts("Intelligent move: #{new_square} by player #{board.current_player}")
-          Gomoku.Board.update_board(board, new_square)
+          IO.puts("Intelligent move: #{place} by player #{board.current_player}")
+          Gomoku.Board.update_board(board, place)
 
         {:error, reason} ->
-          IO.puts("Invalid move: #{new_square} because #{reason}")
+          IO.puts("Invalid move: #{place} because #{reason}")
           # Retry or handle the error as needed
           make_move(board)
       end
 
-    # Gomoku.Rle.new(new_board) |> dbg
+    # Gomoku.Runs.new(new_board) |> dbg
     new_board
   end
 
-  def find_a_place(%__MODULE__{} = runs, :black = my_color) do
-    offense_patterns = [
-      ~r/ 4X/,
-      ~r/4X. /,
-      ~r/[2-9A-Z] 3X. /,
-      ~r/. 3X[2-9A-Z ]/,
-      ~r/ 1X1 2X. /,
-      ~r/ 2X1 1X. /,
-      ~r/ 3X[2-9A-Z ]/,
-      ~r/ 3X[2-9A-Z] /,
-      ~r/[2-9A-Z] 2X[2-9A-Z] /,
-      ~r/[3-9A-Z] 1X[2-9A-Z] /,
-      ~r/ 1X[4-9A-Z] /,
-      ~r/[4-9A-Z] 1X. /,
-      ~r//
+  def find_a_place(%Gomoku.Runs{} = _runs, :black = _my_color) do
+    _offense_patterns = [
+      ~r/ XXXX/,
+      ~r/XXXX /,
+      ~r/  XXX /,
+      ~r/ XXX  /,
+      ~r/ X XX /,
+      ~r/ XX X /,
+      ~r/  XX   /,
+      ~r/    X  /,
+      ~r/ X    /
     ]
-    defense_patterns =
+
+    _defense_patterns = [
+      ~r/ OOOO/,
+      ~r/OOOO /,
+      ~r/  OOO /,
+      ~r/ OOO  /,
+      ~r/ O OO /,
+      ~r/ OO O /,
+      ~r/  OO   /,
+      ~r/    O  /,
+      ~r/ O    /
+    ]
   end
 
-  def find_a_place(%__MODULE__{} = rle, :white = my_color) do
+  def find_a_place(%Gomoku.Runs{} = _runs, :white = _my_color) do
+    _offense_patterns = [
+      ~r/ OOOO/,
+      ~r/OOOO /,
+      ~r/  OOO /,
+      ~r/ OOO  /,
+      ~r/ O OO /,
+      ~r/ OO O /,
+      ~r/  OO   /,
+      ~r/    O  /,
+      ~r/ O    /
+    ]
+
+    _defense_patterns = [
+      ~r/ XXXX/,
+      ~r/XXXX /,
+      ~r/  XXX /,
+      ~r/ XXX  /,
+      ~r/ X XX /,
+      ~r/ XX X /,
+      ~r/  XX   /,
+      ~r/    X  /,
+      ~r/ X    /
+    ]
   end
 end

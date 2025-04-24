@@ -1,15 +1,15 @@
-defmodule Gomoku.Rle do
+defmodule Gomoku.Runs do
   @moduledoc """
-  This module provides functions for implementing the RLE (Run-Length Encoding)
+  This module provides functions for implementing the RUNS (Run-Length Encoding)
   analysis for the Gomoku game.
 
   It takes a grid and recodes it in 4 ways: horizontally, vertically, and twice diagonally.
-  Gomoku.Rle is opinionated; it doesn't worry about diagonals that are too close to corners.
+  Gomoku.Runs is opinionated; it doesn't worry about diagonals that are too close to corners.
   (aB and Ba are not relevant to winning or making a move, for example.)
 
-  Gomoku.Intelligence will use the RLE analysis to determine the best move.
+  Gomoku.Intelligence will use the RUNS analysis to determine the best move.
 
-  Gomoku.Board will use the RLE analysis to determine if there is a winner.
+  Gomoku.Board will use the RUNS analysis to determine if there is a winner.
   """
 
   # h, v, dr, dl mean horizontal, vertical, down right, and down left.
@@ -18,7 +18,7 @@ defmodule Gomoku.Rle do
   #  * the starting coordinate of the line
   #  # the advance function
   #  * the go back function
-  #  * the RLE string: # and character: space, O, or X
+  #  * the RUNS string: # and character: space, O, or X
   # the diagonal lists' length is board.size - (5 - 1) * 2 - 1, and are also lists of strings.
   # 5 in the formula above is the number of pieces in a row needed to win.
   # maybe we should delete the grid if it be not used.
@@ -29,7 +29,7 @@ defmodule Gomoku.Rle do
             grid: %{}
 
   def new(%Gomoku.Board{} = board) do
-    # Create a new RLE struct with the board's grid and size
+    # Create a new RUNS struct with the board's grid and size
     %__MODULE__{
       h_runs: [],
       v_runs: [],
@@ -37,39 +37,42 @@ defmodule Gomoku.Rle do
       dl_runs: [],
       grid: board.grid
     }
-    |> make_rles(board.h_list, board.v_list)
+    |> make_runs(board.h_list, board.v_list)
   end
 
-  def make_rles(%__MODULE__{} = rle, h_list, v_list) do
-    # Create the RLEs for the grid
-    {rle, h_list, v_list}
-    |> make_h_rle()
-    |> make_v_rle()
-    |> make_dr_rle()
-    |> make_dl_rle()
+  def make_runs(%__MODULE__{} = runs, h_list, v_list) do
+    # Create the runs for the grid
+
+    {the_runs, _, _} =
+      make_h_runs({runs, h_list, v_list})
+      |> make_v_runs()
+      |> make_dr_runs()
+      |> make_dl_runs()
+
+    the_runs
   end
 
-  def make_h_rle({%__MODULE__{} = rle, h_list, v_list}) do
-    # Create the horizontal RLEs
+  def make_h_runs({%__MODULE__{} = runs, h_list, v_list}) do
+    # Create the horizontal Runs
     # create starting coordinates for each
-    runs = Enum.map(v_list, fn v -> {"#{v}A", scan_one(v, h_list, rle.grid)} end)
-    {%{rle | h_runs: runs}, h_list, v_list}
+    runs = Enum.map(v_list, fn v -> {"#{v}A", scan_one(v, h_list, runs.grid)} end)
+    {%{runs | h_runs: runs}, h_list, v_list}
   end
 
-  def make_v_rle({%__MODULE__{} = rle, h_list, v_list}) do
-    # Create the vertical RLEs
-    runs = Enum.map(h_list, fn h -> {"#{h}a", scan_one(h, v_list, rle.grid)} end)
-    {%{rle | v_runs: runs}, h_list, v_list}
+  def make_v_runs({%__MODULE__{} = runs, h_list, v_list}) do
+    # Create the vertical Runs
+    runs = Enum.map(h_list, fn h -> {"#{h}a", scan_one(h, v_list, runs.grid)} end)
+    {%{runs | v_runs: runs}, h_list, v_list}
   end
 
-  def make_dr_rle({%__MODULE__{} = rle, h_list, v_list}) do
-    # Create the down-right RLEs
-    {rle, h_list, v_list}
+  def make_dr_runs({%__MODULE__{} = runs, h_list, v_list}) do
+    # Create the down-right Runs
+    {runs, h_list, v_list}
   end
 
-  def make_dl_rle({%__MODULE__{} = rle, h_list, v_list}) do
-    # Create the down-left RLEs
-    {rle, h_list, v_list}
+  def make_dl_runs({%__MODULE__{} = runs, h_list, v_list}) do
+    # Create the down-left Runs
+    {runs, h_list, v_list}
   end
 
   def scan_one(fixed_coord, [first_scan | rest_of_scans], grid) do
