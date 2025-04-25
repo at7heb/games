@@ -33,55 +33,71 @@ defmodule Gomoku.Intelligence do
     new_board
   end
 
-  def find_a_place(%Gomoku.Runs{} = _runs, :black = _my_color) do
-    _offense_patterns = [
-      ~r/ XXXX/,
-      ~r/XXXX /,
-      ~r/  XXX /,
-      ~r/ XXX  /,
-      ~r/ X XX /,
-      ~r/ XX X /,
-      ~r/  XX   /,
-      ~r/    X  /,
-      ~r/ X    /
+  @doc """
+      find_a_place(runs, offense_patterns, defense_patterns)
+      Regex.named_captures(~r/c(?<foo>d)/, "abcd")
+      %{"foo" => "d"}
+  """
+  def find_a_place(%Gomoku.Runs{} = runs, :black = _my_color) do
+    offense_patterns = [
+      ~r/(?<b> )XXXX/,
+      ~r/XXXX(?<b> )/,
+      ~r/ (?<b> )XXX /,
+      ~r/ XXX(?<b> ) /,
+      ~r/ X(?<b> )XX /,
+      ~r/ XX(?<b> )X /,
+      ~r/  XX(?<b> )  /,
+      ~r/   (?<b> )X  /,
+      ~r/ X(?<b> )   /
     ]
 
-    _defense_patterns = [
-      ~r/ OOOO/,
-      ~r/OOOO /,
-      ~r/  OOO /,
-      ~r/ OOO  /,
-      ~r/ O OO /,
-      ~r/ OO O /,
-      ~r/  OO   /,
-      ~r/    O  /,
-      ~r/ O    /
+    defense_patterns = [
+      ~r/(?<b> )OOOO/,
+      ~r/OOOO(?<b> )/,
+      ~r/ (?<b> )OOO /,
+      ~r/ OOO(?<b> ) /,
+      ~r/ O(?<b> )OO /,
+      ~r/ OO(?<b> )O /,
+      ~r/  OO(?<b> )  /,
+      ~r/   (?<b> )O  /,
+      ~r/ O(?<b> )   /
     ]
+
+    find_a_place(runs, offense_patterns, defense_patterns)
   end
 
-  def find_a_place(%Gomoku.Runs{} = _runs, :white = _my_color) do
-    _offense_patterns = [
-      ~r/ OOOO/,
-      ~r/OOOO /,
-      ~r/  OOO /,
-      ~r/ OOO  /,
-      ~r/ O OO /,
-      ~r/ OO O /,
-      ~r/  OO   /,
-      ~r/    O  /,
-      ~r/ O    /
+  def find_a_place(%Gomoku.Runs{} = runs, :white = _my_color) do
+    offense_patterns = [
+      ~r/(?<b> )OOOO/,
+      ~r/OOOO(?<b> )/,
+      ~r/ (?<b> )OOO /,
+      ~r/ OOO(?<b> ) /,
+      ~r/ O(?<b> )OO /,
+      ~r/ OO(?<b> )O /,
+      ~r/  OO(?<b> )  /,
+      ~r/   (?<b> )O  /,
+      ~r/ O(?<b> )   /
     ]
 
-    _defense_patterns = [
-      ~r/ XXXX/,
-      ~r/XXXX /,
-      ~r/  XXX /,
-      ~r/ XXX  /,
-      ~r/ X XX /,
-      ~r/ XX X /,
-      ~r/  XX   /,
-      ~r/    X  /,
-      ~r/ X    /
+    defense_patterns = [
+      ~r/(?<b> )XXXX/,
+      ~r/XXXX(?<b> )/,
+      ~r/ (?<b> )XXX /,
+      ~r/ XXX(?<b> ) /,
+      ~r/ X(?<b> )XX /,
+      ~r/ XX(?<b> )X /,
+      ~r/  XX(?<b> )  /,
+      ~r/   (?<b> )X  /,
+      ~r/ X(?<b> )   /
     ]
+
+    find_a_place(runs, offense_patterns, defense_patterns)
+  end
+
+  def find_a_place(%Gomoku.Runs{} = _runs, _my_color) do
+    # Default case if no color is provided
+    # You can handle this case as needed
+    IO.puts("No color provided. Cannot determine a place.")
+    raise "No color provided"
   end
 end
