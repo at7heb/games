@@ -59,11 +59,12 @@ defmodule Gomoku.Runs do
       Enum.map(
         v_list,
         fn v ->
-          Enum.map(
-            h_list,
-            fn h -> Map.get(runs.grid, "#{h}#{v}", " ") |> Gomoku.Board.one_character_color() end
-          )
-          |> Enum.join()
+          {v,
+           Enum.map(
+             h_list,
+             fn h -> Map.get(runs.grid, "#{h}#{v}", " ") |> Gomoku.Board.one_character_color() end
+           )
+           |> Enum.join()}
         end
       )
 
@@ -76,10 +77,11 @@ defmodule Gomoku.Runs do
       Enum.map(
         h_list,
         fn h ->
-          Enum.map(v_list, fn v ->
-            Map.get(runs.grid, "#{h}#{v}", " ") |> Gomoku.Board.one_character_color()
-          end)
-          |> Enum.join()
+          {h,
+           Enum.map(v_list, fn v ->
+             Map.get(runs.grid, "#{h}#{v}", " ") |> Gomoku.Board.one_character_color()
+           end)
+           |> Enum.join()}
         end
       )
 
