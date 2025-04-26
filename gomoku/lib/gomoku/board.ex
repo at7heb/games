@@ -168,4 +168,28 @@ defmodule Gomoku.Board do
       | current_player: new_player
     }
   end
+
+  def random_place(%__MODULE__{} = board) do
+    all_coordinates = for h <- board.h_list, v <- board.v_list, do: "#{h}#{v}"
+    used_coordinates = Map.keys(board.grid)
+    available_coordinates = all_coordinates -- used_coordinates
+    Enum.random(available_coordinates)
+  end
+
+  def coordinate_from_search_result(board, coordinate, direction, move_location) do
+    # Convert the search result to a coordinate
+    # This is a placeholder implementation
+    # Replace with actual logic to convert the search result to a coordinate
+    {coordinate, direction, move_location} |> dbg
+
+    {h, v} =
+      case direction do
+        :r000 -> {Enum.at(board.h_list, move_location), coordinate}
+        :r090 -> {coordinate, Enum.at(board.v_list, move_location)}
+        :r045 -> {"D", "b"} |> dbg
+        :r135 -> {"C", "d"} |> dbg
+      end
+
+    "#{h}#{v}" |> dbg
+  end
 end

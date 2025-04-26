@@ -14,7 +14,29 @@ defmodule Gomoku.Intelligence do
     # Replace with actual logic to determine the move
     runs = Gomoku.Runs.new(board)
     # my_color = if board.current_player == :black, do: "X", else: "O"
-    place = find_a_place(runs, board.current_player)
+    place = find_a_place(runs, board.current_player) |> dbg
+
+    case place do
+      :none ->
+        # really use board to make a random move.
+        random_place = Gomoku.Board.random_place(board)
+        IO.puts("Random move: #{random_place} by player #{board.current_player}")
+        random_place
+
+      # here we cae about
+      # coordinate: coordinate,
+      # direction: direction,
+      # move_location: move_location
+
+      {:move, chosen_result} ->
+        Gomoku.Board.coordinate_from_search_result(
+          board,
+          chosen_result.coordinate,
+          chosen_result.direction,
+          chosen_result.move_location
+        )
+    end
+
     # IO.puts("Intelligent move: #{place} by player #{board.current_player}")
 
     new_board =
@@ -45,31 +67,20 @@ defmodule Gomoku.Intelligence do
   end
 
   def find_a_place(%Gomoku.Runs{} = runs, patterns) when is_list(patterns) do
-    # Default case if no color is provided
-    # You can handle this case as needed
-    IO.puts("No color provided. Cannot determine a place.")
-    raise "No color provided"
-  end
-
-  def find_a_place(%Gomoku.Runs{} = runs, offense_patterns, defense_patterns) do
-    # Find a place based on the provided patterns
-    # This is a placeholder implementation
-    # Replace with actual logic to determine the move
-
-    # Check offense patterns
-    # Check defense patterns
-    Enum.find_value(offense_patterns, fn pattern ->
-      case Regex.run(pattern, runs.h_runs) do
-        nil -> nil
-        [_, place] -> place
-      end
-    end) ||
-      Enum.find_value(defense_patterns, fn pattern ->
-        case Regex.run(pattern, runs.h_runs) do
-          nil -> nil
-          [_, place] -> place
-        end
+    scan_sequence = fn {direction, coordinate, row}, %Gomoku.Search{} = search ->
+      Regex.scan(search.pattern, row, return: :index)
+      |> Enum.map(fn [_whole, {_s, _l} = move_location] ->
+        Gomoku.SearchResult.new(direction, coordinate, search.type, search.value, move_location)
       end)
+    end
+
+    for run <- [runs.h_runs, runs.v_runs, runs.dr_runs, runs.dl_runs],
+        sequence <- run,
+        pattern <- patterns do
+      {run, sequence, pattern} |> dbg
+      scan_sequence.(sequence, pattern)
+    end
+    |> Gomoku.SearchResult.best_search_result()
   end
 
   def patterns(my_color) do
