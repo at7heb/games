@@ -16,36 +16,38 @@ defmodule Gomoku.Intelligence do
     # my_color = if board.current_player == :black, do: "X", else: "O"
     place = find_a_place(runs, board.current_player) |> dbg
 
-    case place do
-      :none ->
-        # really use board to make a random move.
-        random_place = Gomoku.Board.random_place(board)
-        IO.puts("Random move: #{random_place} by player #{board.current_player}")
-        random_place
+    place_coordinates =
+      case place do
+        :none ->
+          # really use board to make a random move.
+          random_place = Gomoku.Board.random_place(board)
+          IO.puts("Random move: #{random_place} by player #{board.current_player}")
+          random_place
 
-      # here we cae about
-      # coordinate: coordinate,
-      # direction: direction,
-      # move_location: move_location
+        # here we cae about
+        # coordinate: coordinate,
+        # direction: direction,
+        # move_location: move_location
 
-      {:move, chosen_result} ->
-        Gomoku.Board.coordinate_from_search_result(
-          board,
-          chosen_result.coordinate,
-          chosen_result.direction,
-          chosen_result.move_location
-        )
-    end
+        {:move, chosen_result} ->
+          Gomoku.Board.coordinate_from_search_result(
+            board,
+            chosen_result.coordinate,
+            chosen_result.direction,
+            chosen_result.move_location
+          )
+      end
 
     # IO.puts("Intelligent move: #{place} by player #{board.current_player}")
+    place_coordinates |> dbg()
 
     new_board =
-      Gomoku.Board.validate_selection(board, place)
+      Gomoku.Board.validate_selection(board, place_coordinates)
       |> case do
         :ok ->
           # Update the board with the move
-          IO.puts("Intelligent move: #{place} by player #{board.current_player}")
-          Gomoku.Board.update_board(board, place)
+          IO.puts("Intelligent move to: #{place_coordinates} by player #{board.current_player}")
+          Gomoku.Board.update_board(board, place_coordinates)
 
         {:error, reason} ->
           IO.puts("Invalid move: #{place} because #{reason}")
@@ -77,27 +79,30 @@ defmodule Gomoku.Intelligence do
     for run <- [runs.h_runs, runs.v_runs, runs.dr_runs, runs.dl_runs],
         sequence <- run,
         pattern <- patterns do
-      {run, sequence, pattern} |> dbg
-      scan_sequence.(sequence, pattern)
+      # {run, sequence, pattern}
+      scan_result = scan_sequence.(sequence, pattern)
+      {sequence, pattern, scan_result} |> dbg()
+      scan_result
     end
     |> Gomoku.SearchResult.best_search_result()
   end
 
   def patterns(my_color) do
     [
-      Search.new("(?<b> )MMMM", 100, :offense, my_color),
-      Search.new("MMMM(?<b> )", 100, :offense, my_color),
-      Search.new(" (?<b> )MMM ", 100, :offense, my_color),
-      Search.new(" MMM(?<b> ) ", 100, :offense, my_color),
+      Search.new("(?<b> )++++", 100, :offense, my_color),
+      Search.new("-(?<b> )    ", 100, :defense, my_color),
+      Search.new("++++(?<b> )", 100, :offense, my_color),
+      Search.new(" (?<b> )+++ ", 100, :offense, my_color),
+      Search.new(" +++(?<b> ) ", 100, :offense, my_color),
       Search.new("   (?<b> )    ", 70, :defense, my_color),
-      Search.new("  (?<b>M)    ", 65, :defense, my_color),
-      Search.new("   (?<b>M)    ", 65, :defense, my_color),
+      Search.new("  (?<b> )-    ", 65, :defense, my_color),
+      Search.new("   -(?<b> )    ", 65, :defense, my_color),
       #   ~r/ XXX(?<b> ) /,
       # all may be lost; don't bring attention
-      Search.new("(?<b> )OOOO", 0, :defense, my_color),
-      Search.new("OOOO(?<b> )", 0, :defense, my_color),
-      Search.new("(?<b> )OOO", 98, :defense, my_color),
-      Search.new("OOO(?<b> )", 98, :defense, my_color)
+      Search.new("(?<b> )----", 0, :defense, my_color),
+      Search.new("----(?<b> )", 0, :defense, my_color),
+      Search.new("(?<b> )---", 98, :defense, my_color),
+      Search.new("---(?<b> )", 98, :defense, my_color)
     ]
 
     # offense_patterns = [

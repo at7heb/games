@@ -184,8 +184,8 @@ defmodule Gomoku.Board do
 
     {h, v} =
       case direction do
-        :r000 -> {Enum.at(board.h_list, move_location), coordinate}
-        :r090 -> {coordinate, Enum.at(board.v_list, move_location)}
+        :r000 -> {Enum.at(board.h_list, elem(move_location, 0)), coordinate}
+        :r090 -> {coordinate, Enum.at(board.v_list, elem(move_location, 0))}
         :r045 -> {"D", "b"} |> dbg
         :r135 -> {"C", "d"} |> dbg
       end

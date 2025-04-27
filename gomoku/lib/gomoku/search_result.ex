@@ -23,8 +23,8 @@ defmodule Gomoku.SearchResult do
 
   def best_search_result(search_results) when is_list(search_results) do
     search_results =
-      Enum.sort(search_results, fn %__MODULE__{value: a_search_value} = _a,
-                                   %__MODULE__{value: b_search_value} = _b ->
+      Enum.sort(List.flatten(search_results), fn %__MODULE__{value: a_search_value} = _a,
+                                                 %__MODULE__{value: b_search_value} = _b ->
         a_search_value >= b_search_value
       end)
 
@@ -41,6 +41,7 @@ defmodule Gomoku.SearchResult do
           end)
           |> Enum.shuffle()
           |> Enum.take(1)
+          |> hd
 
         {:move, chosen_result}
     end
