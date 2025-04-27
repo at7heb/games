@@ -14,7 +14,8 @@ defmodule Gomoku.Intelligence do
     # Replace with actual logic to determine the move
     runs = Gomoku.Runs.new(board)
     # my_color = if board.current_player == :black, do: "X", else: "O"
-    place = find_a_place(runs, board.current_player) |> dbg
+    # |> dbg
+    place = find_a_place(runs, board.current_player)
 
     place_coordinates =
       case place do
@@ -39,7 +40,7 @@ defmodule Gomoku.Intelligence do
       end
 
     # IO.puts("Intelligent move: #{place} by player #{board.current_player}")
-    place_coordinates |> dbg()
+    # place_coordinates |> dbg()
 
     new_board =
       Gomoku.Board.validate_selection(board, place_coordinates)
@@ -81,7 +82,7 @@ defmodule Gomoku.Intelligence do
         pattern <- patterns do
       # {run, sequence, pattern}
       scan_result = scan_sequence.(sequence, pattern)
-      {sequence, pattern, scan_result} |> dbg()
+      # {sequence, pattern, scan_result} |> dbg()
       scan_result
     end
     |> Gomoku.SearchResult.best_search_result()
@@ -90,7 +91,8 @@ defmodule Gomoku.Intelligence do
   def patterns(my_color) do
     [
       Search.new("(?<b> )++++", 100, :offense, my_color),
-      Search.new("-(?<b> )    ", 100, :defense, my_color),
+      Search.new("-(?<b> )    ", 5, :defense, my_color),
+      Search.new("   (?<b> )-", 5, :defense, my_color),
       Search.new("++++(?<b> )", 100, :offense, my_color),
       Search.new(" (?<b> )+++ ", 100, :offense, my_color),
       Search.new(" +++(?<b> ) ", 100, :offense, my_color),

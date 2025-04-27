@@ -65,7 +65,7 @@ defmodule Gomoku.Board do
   def update_board(%__MODULE__{} = board, new_square) do
     new_square = canonicalize(new_square)
     color = board.current_player
-    {new_square, color} |> dbg
+    # {new_square, color} |> dbg
     # Update the board with the new move
     grid = Map.put(board.grid, new_square, color)
 
@@ -98,7 +98,7 @@ defmodule Gomoku.Board do
     # Display the board
     IO.puts("Current Player: #{board.current_player}")
     IO.puts("Board Size: #{board.size}")
-    IO.puts("Grid: #{inspect(board.grid)}")
+    # IO.puts("Grid: #{inspect(board.grid)}")
     IO.puts("State: #{board.state}")
     boundary = String.duplicate("-", board.size + 2)
 
@@ -180,7 +180,7 @@ defmodule Gomoku.Board do
     # Convert the search result to a coordinate
     # This is a placeholder implementation
     # Replace with actual logic to convert the search result to a coordinate
-    {coordinate, direction, move_location} |> dbg
+    # {coordinate, direction, move_location} |> dbg
 
     {h, v} =
       case direction do
@@ -190,6 +190,7 @@ defmodule Gomoku.Board do
         :r135 -> {"C", "d"} |> dbg
       end
 
-    "#{h}#{v}" |> dbg
+    # |> dbg
+    "#{h}#{v}"
   end
 end
