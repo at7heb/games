@@ -77,7 +77,14 @@ defmodule Gomoku.Intelligence do
       end)
     end
 
-    for run <- [runs.h_runs, runs.v_runs, runs.dr_runs, runs.dl_runs],
+    for run <- [
+          runs.h_runs,
+          runs.v_runs,
+          runs.dr_runs_u,
+          runs.dr_runs_l,
+          runs.ur_runs_u,
+          runs.ur_runs_l
+        ],
         sequence <- run,
         pattern <- patterns do
       # {run, sequence, pattern}

@@ -24,8 +24,10 @@ defmodule Gomoku.Runs do
   # maybe we should delete the grid if it be not used.
   defstruct h_runs: [],
             v_runs: [],
-            dr_runs: [],
-            dl_runs: [],
+            dr_runs_u: [],
+            dr_runs_l: [],
+            ur_runs_u: [],
+            ur_runs_l: [],
             grid: %{}
 
   def new(%Gomoku.Board{} = board) do
@@ -33,8 +35,10 @@ defmodule Gomoku.Runs do
     %__MODULE__{
       h_runs: [],
       v_runs: [],
-      dr_runs: [],
-      dl_runs: [],
+      dr_runs_u: [],
+      dr_runs_l: [],
+      ur_runs_u: [],
+      ur_runs_l: [],
       grid: board.grid
     }
     |> make_runs(board.h_list, board.v_list)
@@ -46,8 +50,10 @@ defmodule Gomoku.Runs do
     {the_runs, _, _} =
       make_h_runs({runs, h_list, v_list})
       |> make_v_runs()
-      |> make_dr_runs()
-      |> make_dl_runs()
+      |> make_135U_runs()
+      |> make_135L_runs()
+      |> make_045U_runs()
+      |> make_045L_runs()
 
     the_runs
   end
@@ -88,13 +94,74 @@ defmodule Gomoku.Runs do
     {%{runs | v_runs: runs_list}, h_list, v_list}
   end
 
-  def make_dr_runs({%__MODULE__{} = runs, h_list, v_list}) do
-    # Create the down-right Runs
+  # do these numerically and convert to letters
+  # 135 is upper left to lower right; U is the diagonal and above; L is the rest.
+  # 045 is upper right to lower left; U is the diagonal and above; L is the rest.
+  # numerical coordinaes are 0..(board.size - 1), as {x, y}.
+  # x increase left to right, y increases top to bottom.
+  def make_135U_runs({%__MODULE__{} = runs, h_list, v_list}) do
+    size = length(h_list)
+
+    new_runs =
+      Enum.map(
+        4..(size - 1),
+        fn y ->
+          {
+            :r135u,
+            Enum.at(v_list, y),
+            Enum.map(0..y, fn x ->
+              Map.get(runs.grid, Enum.at(h_list, x) <> Enum.at(v_list, y - x), " ")
+              |> Gomoku.Board.one_character_color()
+            end)
+            |> Enum.join()
+          }
+        end
+      )
+
+    new_runs |> dbg
+    {%{runs | ur_runs_u: new_runs}, h_list, v_list}
+  end
+
+  def make_135L_runs({%__MODULE__{} = runs, h_list, v_list}) do
+    size = length(h_list)
+
+    new_runs =
+      Enum.map(
+        0..(size - 5 - 1),
+        fn x_inc ->
+          {
+            :r135l,
+            Enum.at(h_list, 1 + x_inc),
+            Enum.map(0..(size - 1 - x_inc - 1), fn xy_inc ->
+              Map.get(
+                runs.grid,
+                (Enum.at(h_list, 1 + x_inc + xy_inc, "Z") <>
+                   Enum.at(v_list, size - x_inc - xy_inc - 1, "z"))
+                |> dbg,
+                " "
+              )
+              |> Gomoku.Board.one_character_color()
+            end)
+            |> Enum.join()
+          }
+        end
+      )
+
+    {%{runs | ur_runs_l: new_runs}, h_list, v_list}
+  end
+
+  def make_045U_runs({%__MODULE__{} = runs, h_list, v_list}) do
+    _size = length(h_list)
     {runs, h_list, v_list}
   end
 
-  def make_dl_runs({%__MODULE__{} = runs, h_list, v_list}) do
-    # Create the down-left Runs
+  # def make_135L_runs({%__MODULE__{} = runs, h_list, v_list}) do
+  #   _size = length(h_list)
+  #   {runs, h_list, v_list}
+  # end
+
+  def make_045L_runs({%__MODULE__{} = runs, h_list, v_list}) do
+    _size = length(h_list)
     {runs, h_list, v_list}
   end
 

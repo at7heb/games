@@ -184,13 +184,43 @@ defmodule Gomoku.Board do
 
     {h, v} =
       case direction do
-        :r000 -> {Enum.at(board.h_list, elem(move_location, 0)), coordinate}
-        :r090 -> {coordinate, Enum.at(board.v_list, elem(move_location, 0))}
-        :r045 -> {"D", "b"} |> dbg
-        :r135 -> {"C", "d"} |> dbg
+        :r000 ->
+          {Enum.at(board.h_list, elem(move_location, 0)), coordinate}
+
+        :r090 ->
+          {coordinate, Enum.at(board.v_list, elem(move_location, 0))}
+
+        :r045l ->
+          {"D", "b"} |> dbg
+
+        :r045u ->
+          {"D", "b"} |> dbg
+
+        :r135l ->
+          {"C", "d"} |> dbg
+
+        :r135u ->
+          {Enum.at(board.h_list, elem(move_location, 0)),
+           get_offset_coordinate(board.v_list, coordinate, -elem(move_location, 0))}
+          |> dbg
       end
 
     # |> dbg
     "#{h}#{v}"
+  end
+
+  def get_offset_coordinate(list, element, offset) do
+    # Get the index of the element in the list
+    index = Enum.find_index(list, fn x -> x == element end)
+
+    # Calculate the new index with the offset
+    new_index = index + offset
+
+    # Check if the new index is within bounds
+    if new_index >= 0 and new_index < length(list) do
+      Enum.at(list, new_index)
+    else
+      nil
+    end
   end
 end
