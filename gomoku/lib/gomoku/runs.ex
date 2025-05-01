@@ -99,7 +99,7 @@ defmodule Gomoku.Runs do
   # 045 is upper right to lower left; U is the diagonal and above; L is the rest.
   # numerical coordinaes are 0..(board.size - 1), as {x, y}.
   # x increase left to right, y increases top to bottom.
-  def make_135U_runs({%__MODULE__{} = runs, h_list, v_list}) do
+  def make_045U_runs({%__MODULE__{} = runs, h_list, v_list}) do
     size = length(h_list)
 
     new_runs =
@@ -107,7 +107,7 @@ defmodule Gomoku.Runs do
         4..(size - 1),
         fn y ->
           {
-            :r135u,
+            :r045u,
             Enum.at(v_list, y),
             Enum.map(0..y, fn x ->
               Map.get(runs.grid, Enum.at(h_list, x) <> Enum.at(v_list, y - x), " ")
@@ -122,7 +122,7 @@ defmodule Gomoku.Runs do
     {%{runs | ur_runs_u: new_runs}, h_list, v_list}
   end
 
-  def make_135L_runs({%__MODULE__{} = runs, h_list, v_list}) do
+  def make_045L_runs({%__MODULE__{} = runs, h_list, v_list}) do
     size = length(h_list)
 
     new_runs =
@@ -130,7 +130,7 @@ defmodule Gomoku.Runs do
         0..(size - 5 - 1),
         fn x_inc ->
           {
-            :r135l,
+            :r045l,
             Enum.at(h_list, 1 + x_inc),
             Enum.map(0..(size - 1 - x_inc - 1), fn xy_inc ->
               Map.get(
@@ -150,9 +150,28 @@ defmodule Gomoku.Runs do
     {%{runs | ur_runs_l: new_runs}, h_list, v_list}
   end
 
-  def make_045U_runs({%__MODULE__{} = runs, h_list, v_list}) do
-    _size = length(h_list)
-    {runs, h_list, v_list}
+  # Handy Function:
+  #   def get_offset_coordinate(list, element, offset) do
+
+  def make_135U_runs({%__MODULE__{} = runs, h_list, v_list}) do
+    last = length(h_list)
+
+    runs_list =
+      Enum.map(
+        last..5//-1,
+        fn vertical_start ->
+          {:r135u, Gomoku.Board.index_1_coordinate(vertical_start, :vertical),
+           Enum.map(
+             0..(vertical_start - 1),
+             fn hv_increment ->
+               Gomoku.Board.index_1_coordinate(last - hv_increment, :horizontal) <>
+                 Gomoku.Board.index_1_coordinate(vertical_start - hv_increment, :vertical)
+             end
+           )}
+        end
+      )
+
+    {%{runs | ul_runs_u: runs_list}, h_list, v_list}
   end
 
   # def make_135L_runs({%__MODULE__{} = runs, h_list, v_list}) do
@@ -160,8 +179,28 @@ defmodule Gomoku.Runs do
   #   {runs, h_list, v_list}
   # end
 
-  def make_045L_runs({%__MODULE__{} = runs, h_list, v_list}) do
-    _size = length(h_list)
+  @spec make_135L_runs({%Gomoku.Runs{optional(any()) => any()}, list(), any()}) ::
+          {%Gomoku.Runs{optional(any()) => any()}, list(), any()}
+  def make_135L_runs({%__MODULE__{} = runs, h_list, v_list}) do
+    size = length(h_list)
+
+    runs_list =
+      Enum.map(
+        (size - 1)..5//-1,
+        fn horizontal_start ->
+          {:r135u, Gomoku.Board.index_1_coordinate(horizontal_start, :horizontal),
+           Enum.map(
+             1..horizontal_start,
+             fn hv_increment ->
+               Gomoku.Board.index_1_coordinate(horizontal_start - hv_increment - 1, :horizontal) <>
+                 Gomodu.Board.index_1_coordinate(size - hv_increment, :vertical)
+
+               ### fix this!!
+             end
+           )}
+        end
+      )
+
     {runs, h_list, v_list}
   end
 

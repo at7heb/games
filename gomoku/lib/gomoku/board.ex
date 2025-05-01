@@ -223,4 +223,7 @@ defmodule Gomoku.Board do
       nil
     end
   end
+
+  def index_1_coordinate(index, :horizontal), do: Enum.at(@horizontal, index - 1)
+  def index_1_coordinate(index, :vertical), do: Enum.at(@vertical, index - 1)
 end
